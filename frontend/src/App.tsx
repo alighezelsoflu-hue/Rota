@@ -4,6 +4,7 @@ import { api, clearToken, getToken, setToken } from './api'
 import type { Contribution, Group, GroupDetail, NetworkEdge, NetworkGraph, NetworkNode, User } from './api'
 import CircleCalculator from './CircleCalculator'
 import ProductPrinciples from './ProductPrinciples'
+import LiveCircleSimulator from './LiveCircleSimulator'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -45,6 +46,7 @@ function Shell({ user, onLogout, children }: { user: User | null; onLogout: () =
             <>
               <Link to="/dashboard">Dashboard</Link>
               <Link to="/network">Trust Network</Link>
+              <Link to="/simulator">Simulator</Link>
               <Link to="/groups/new">Create group</Link>
               <span className="trust">Trust {user.trust_score}</span>
               <button className="ghost" onClick={onLogout}>Logout</button>
@@ -53,6 +55,7 @@ function Shell({ user, onLogout, children }: { user: User | null; onLogout: () =
             <>
               <a href="/#how-it-works">How it works</a>
               <a href="/#trust">Trust</a>
+              <Link to="/simulator">Simulator</Link>
               <Link to="/login">Log in</Link>
               <Link className="navButton" to="/register">Create account</Link>
             </>
@@ -83,7 +86,7 @@ function Landing() {
           </p>
           <div className="actions">
             <Link className="button" to="/register">Create a group</Link>
-            <Link className="button secondary" to="/login">Join / log in</Link>
+            <Link className="button secondary" to="/simulator">Try simulator</Link>
           </div>
           <div className="safeNote">
             <span>Important:</span> Your group charges no interest. No wallet. No deposits. Members pay each other directly.
@@ -117,7 +120,9 @@ function Landing() {
           </div>
         </div>
       </section>
+
       <ProductPrinciples />
+
       <section id="how-it-works" className="sectionBlock">
         <div className="sectionIntro">
           <p className="eyebrow">How it works</p>
@@ -178,7 +183,7 @@ function Landing() {
         <p>Invite your existing group, run one cycle, and check whether the ledger is clearer than paper or WhatsApp.</p>
         <div className="actions centered">
           <Link className="button" to="/register">Create account</Link>
-          <Link className="button secondary" to="/login">Log in</Link>
+          <Link className="button secondary" to="/simulator">Try simulator</Link>
         </div>
       </section>
     </div>
@@ -291,6 +296,7 @@ function Dashboard({ user }: { user: User }) {
           <p className="mutedText">Create groups, join with invite codes, and monitor contribution cycles from one place.</p>
         </div>
         <div className="actions noMargin">
+          <Link className="button secondary" to="/simulator">Open simulator</Link>
           <Link className="button secondary" to="/network">Open Trust Network</Link>
           <Link className="button" to="/groups/new">Create group</Link>
         </div>
@@ -304,7 +310,9 @@ function Dashboard({ user }: { user: User }) {
         <div className="statCard"><span>Verification</span><strong>{user.verification_status}</strong></div>
         <div className="statCard"><span>Money held by Rota</span><strong>€0</strong></div>
       </section>
+
       <ProductPrinciples compact />
+
       <section className="card mainPanel">
         <div className="panelHeader">
           <div>
@@ -347,6 +355,13 @@ function Dashboard({ user }: { user: User }) {
             <label>Invite code<input value={inviteCode} onChange={e => setInviteCode(e.target.value.toUpperCase())} placeholder="Example: ABC123" /></label>
             <button className="button full" type="submit">Join group</button>
           </form>
+        </section>
+
+        <section className="card networkTeaser">
+          <p className="eyebrow">Circle Simulator</p>
+          <h2>Calculate before you create.</h2>
+          <p>Simulate how many people you need, how much each person contributes, and how much each cycle creates.</p>
+          <Link className="button full secondary" to="/simulator">Try simulator</Link>
         </section>
 
         <section className="card networkTeaser">
@@ -393,6 +408,8 @@ function NewGroup() {
     }
   }
 
+  const estimatedPot = amount * memberLimit
+
   return (
     <div className="createLayout">
       <form className="card form" onSubmit={submit}>
@@ -410,6 +427,9 @@ function NewGroup() {
           </select>
         </label>
         <label>Member limit<input value={memberLimit} onChange={e => setMemberLimit(Number(e.target.value))} type="number" min="2" max="50" /></label>
+        <div className="safeNote">
+          <span>Estimated pot:</span> {memberLimit} members × {amount} {currency} = {estimatedPot} {currency} each cycle.
+        </div>
         <button className="button full" type="submit">Create group</button>
       </form>
 
@@ -423,6 +443,7 @@ function NewGroup() {
           <li>Direct payments outside Rota</li>
           <li>Proof upload and receiver confirmation</li>
         </ul>
+        <Link className="button full secondary" to="/simulator">Open full simulator</Link>
       </aside>
     </div>
   )
@@ -491,8 +512,9 @@ function GroupPage({ user }: { user: User }) {
         <div className="statCard"><span>Marked paid</span><strong>{paidTotal} {detail.group.currency}</strong></div>
         <div className="statCard"><span>Pending rows</span><strong>{pendingCount}</strong></div>
       </section>
+
       <CircleCalculator detail={detail} currentUserId={user.id} />
-      
+
       <section className="grid two">
         <div className="card cycleCard">
           <div className="panelHeader">
@@ -573,7 +595,6 @@ function GroupPage({ user }: { user: User }) {
   )
 }
 
-
 type PositionedNode = NetworkNode & { x: number; y: number }
 
 function nodeInitials(label: string) {
@@ -610,7 +631,7 @@ function buildNetworkLayout(graph: NetworkGraph) {
     const connectedGroupEdge = graph.edges.find(e => e.source === person.id && e.target.startsWith('group:'))
     const groupPosition = connectedGroupEdge ? positioned[connectedGroupEdge.target] : undefined
     if (groupPosition) {
-      const targetGroupId = connectedGroupEdge?.target || ""
+      const targetGroupId = connectedGroupEdge?.target || ''
       const sameGroupPeople = otherPeople.filter(p => graph.edges.some(e => e.source === p.id && e.target === targetGroupId))
       const groupIndex = sameGroupPeople.findIndex(p => p.id === person.id)
       const fanAngle = -Math.PI / 2 + (Math.PI * 2 * groupIndex) / Math.max(1, sameGroupPeople.length)
@@ -662,6 +683,7 @@ function NetworkPage() {
         </div>
         <div className="actions noMargin">
           <Link className="button secondary" to="/dashboard">Dashboard</Link>
+          <Link className="button secondary" to="/simulator">Simulator</Link>
           <Link className="button" to="/groups/new">Create group</Link>
         </div>
       </section>
@@ -925,6 +947,7 @@ export default function App() {
         <Route path="/" element={auth.user ? <Navigate to="/dashboard" replace /> : <Landing />} />
         <Route path="/login" element={<Login onLogin={auth.refresh} />} />
         <Route path="/register" element={<Register onLogin={auth.refresh} />} />
+        <Route path="/simulator" element={<LiveCircleSimulator />} />
         <Route path="/dashboard" element={<RequireAuth user={auth.user} loading={auth.loading}><Dashboard user={auth.user!} /></RequireAuth>} />
         <Route path="/groups/new" element={<RequireAuth user={auth.user} loading={auth.loading}><NewGroup /></RequireAuth>} />
         <Route path="/network" element={<RequireAuth user={auth.user} loading={auth.loading}><NetworkPage /></RequireAuth>} />
