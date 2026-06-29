@@ -1,5 +1,5 @@
-const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8000').replace(/\/$/, '')
-
+const API_BASE =
+  ((import.meta as any).env?.VITE_API_BASE || 'http://localhost:8000').replace(/\/$/, '')
 export type User = {
   id: string
   name: string
