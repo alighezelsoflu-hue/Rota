@@ -1,0 +1,352 @@
+import os
+import secrets
+from datetime import datetime, timezone
+from typing import Iterable
+
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from .auth import create_access_token, get_current_user, hash_password, verify_password
+from .database import Base, engine, get_db, settings
+from .models import AuditLog, Contribution, Cycle, Dispute, Group, GroupMember, User
+from .schemas import (
+    AuditLogOut,
+    ContributionOut,
+    CycleCreate,
+    CycleOut,
+    DisputeCreate,
+    GroupCreate,
+    GroupDetail,
+    GroupOut,
+    JoinGroupRequest,
+    MemberOut,
+    Token,
+    UserCreate,
+    UserLogin,
+    UserOut,
+)
+
+Base.metadata.create_all(bind=engine)
+os.makedirs(settings.upload_dir, exist_ok=True)
+
+app = FastAPI(title="Rota MVP API", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[origin.strip() for origin in settings.cors_origins.split(",")],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
+
+
+def log_action(db: Session, action: str, user_id: str | None = None, group_id: str | None = None, details: str | None = None) -> None:
+    db.add(AuditLog(action=action, user_id=user_id, group_id=group_id, details=details))
+
+
+def generate_invite_code(db: Session) -> str:
+    for _ in range(20):
+        code = secrets.token_hex(4).upper()
+        exists = db.scalar(select(Group).where(Group.invite_code == code))
+        if not exists:
+            return code
+    raise HTTPException(500, "Could not generate invite code")
+
+
+def require_member(db: Session, group_id: str, user_id: str) -> GroupMember:
+    member = db.scalar(select(GroupMember).where(GroupMember.group_id == group_id, GroupMember.user_id == user_id))
+    if not member:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "You are not a member of this group")
+    return member
+
+
+def require_organizer(db: Session, group_id: str, user_id: str) -> GroupMember:
+    member = require_member(db, group_id, user_id)
+    if member.role not in {"organizer", "co_organizer"}:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Organizer or co-organizer role required")
+    return member
+
+
+def get_user_names(db: Session, user_ids: Iterable[str]) -> dict[str, User]:
+    ids = list(set(user_ids))
+    if not ids:
+        return {}
+    users = db.scalars(select(User).where(User.id.in_(ids))).all()
+    return {user.id: user for user in users}
+
+
+def to_member_out(db: Session, member: GroupMember) -> MemberOut:
+    user = db.get(User, member.user_id)
+    return MemberOut(
+        id=member.id,
+        group_id=member.group_id,
+        user_id=member.user_id,
+        name=user.name if user else None,
+        email=user.email if user else None,
+        role=member.role,
+        position=member.position,
+        status=member.status,
+        joined_at=member.joined_at,
+    )
+
+
+def to_cycle_out(db: Session, cycle: Cycle) -> CycleOut:
+    receiver = db.get(User, cycle.receiver_user_id)
+    return CycleOut(
+        id=cycle.id,
+        group_id=cycle.group_id,
+        cycle_number=cycle.cycle_number,
+        receiver_user_id=cycle.receiver_user_id,
+        receiver_name=receiver.name if receiver else None,
+        due_date=cycle.due_date,
+        status=cycle.status,
+        created_at=cycle.created_at,
+    )
+
+
+def to_contribution_out(db: Session, c: Contribution) -> ContributionOut:
+    users = get_user_names(db, [c.payer_user_id, c.receiver_user_id])
+    return ContributionOut(
+        id=c.id,
+        cycle_id=c.cycle_id,
+        payer_user_id=c.payer_user_id,
+        payer_name=users.get(c.payer_user_id).name if users.get(c.payer_user_id) else None,
+        receiver_user_id=c.receiver_user_id,
+        receiver_name=users.get(c.receiver_user_id).name if users.get(c.receiver_user_id) else None,
+        amount=c.amount,
+        status=c.status,
+        proof_url=c.proof_url,
+        payment_reference=c.payment_reference,
+        note=c.note,
+        paid_at=c.paid_at,
+        confirmed_at=c.confirmed_at,
+        created_at=c.created_at,
+    )
+
+
+def recalculate_trust_score(db: Session, user: User) -> None:
+    total = db.scalars(select(Contribution).where(Contribution.payer_user_id == user.id)).all()
+    confirmed = sum(1 for c in total if c.status == "confirmed")
+    disputed = sum(1 for c in total if c.status == "disputed")
+    overdue = sum(1 for c in total if c.status == "overdue")
+    pending_paid = sum(1 for c in total if c.status == "paid")
+    score = 50 + confirmed * 3 + pending_paid - disputed * 15 - overdue * 10
+    user.trust_score = max(0, min(100, score))
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "rota-mvp"}
+
+
+@app.post("/auth/register", response_model=Token)
+def register(payload: UserCreate, db: Session = Depends(get_db)):
+    existing = db.scalar(select(User).where(User.email == payload.email.lower()))
+    if existing:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
+    user = User(
+        name=payload.name.strip(),
+        email=payload.email.lower(),
+        phone=payload.phone,
+        password_hash=hash_password(payload.password),
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return Token(access_token=create_access_token(user.id))
+
+
+@app.post("/auth/login", response_model=Token)
+def login(payload: UserLogin, db: Session = Depends(get_db)):
+    user = db.scalar(select(User).where(User.email == payload.email.lower()))
+    if not user or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password")
+    return Token(access_token=create_access_token(user.id))
+
+
+@app.get("/me", response_model=UserOut)
+def me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@app.post("/groups", response_model=GroupOut)
+def create_group(payload: GroupCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    group = Group(
+        name=payload.name.strip(),
+        organizer_id=current_user.id,
+        contribution_amount=payload.contribution_amount,
+        currency=payload.currency.upper(),
+        frequency=payload.frequency,
+        member_limit=payload.member_limit,
+        payout_method=payload.payout_method,
+        invite_code=generate_invite_code(db),
+    )
+    db.add(group)
+    db.flush()
+    db.add(GroupMember(group_id=group.id, user_id=current_user.id, role="organizer", position=1))
+    log_action(db, "group_created", current_user.id, group.id, f"Group '{group.name}' created")
+    db.commit()
+    db.refresh(group)
+    return group
+
+
+@app.get("/groups", response_model=list[GroupOut])
+def list_groups(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    memberships = db.scalars(select(GroupMember).where(GroupMember.user_id == current_user.id)).all()
+    group_ids = [m.group_id for m in memberships]
+    if not group_ids:
+        return []
+    return db.scalars(select(Group).where(Group.id.in_(group_ids)).order_by(Group.created_at.desc())).all()
+
+
+@app.post("/groups/join", response_model=GroupOut)
+def join_group(payload: JoinGroupRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    group = db.scalar(select(Group).where(Group.invite_code == payload.invite_code.strip().upper()))
+    if not group:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Invite code not found")
+    existing = db.scalar(select(GroupMember).where(GroupMember.group_id == group.id, GroupMember.user_id == current_user.id))
+    if existing:
+        return group
+    count = len(db.scalars(select(GroupMember).where(GroupMember.group_id == group.id)).all())
+    if count >= group.member_limit:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Group member limit reached")
+    db.add(GroupMember(group_id=group.id, user_id=current_user.id, role="member", position=count + 1))
+    log_action(db, "member_joined", current_user.id, group.id, f"{current_user.name} joined with invite code")
+    db.commit()
+    return group
+
+
+@app.get("/groups/{group_id}", response_model=GroupDetail)
+def group_detail(group_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    group = db.get(Group, group_id)
+    if not group:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Group not found")
+    require_member(db, group_id, current_user.id)
+    members = db.scalars(select(GroupMember).where(GroupMember.group_id == group_id).order_by(GroupMember.position)).all()
+    cycles = db.scalars(select(Cycle).where(Cycle.group_id == group_id).order_by(Cycle.cycle_number.desc())).all()
+    contributions = []
+    if cycles:
+        cycle_ids = [c.id for c in cycles]
+        contributions = db.scalars(select(Contribution).where(Contribution.cycle_id.in_(cycle_ids)).order_by(Contribution.created_at.desc())).all()
+    logs = db.scalars(select(AuditLog).where(AuditLog.group_id == group_id).order_by(AuditLog.created_at.desc()).limit(50)).all()
+    return GroupDetail(
+        group=group,
+        members=[to_member_out(db, m) for m in members],
+        cycles=[to_cycle_out(db, c) for c in cycles],
+        contributions=[to_contribution_out(db, c) for c in contributions],
+        audit_logs=[AuditLogOut.model_validate(log) for log in logs],
+    )
+
+
+@app.post("/groups/{group_id}/cycles", response_model=CycleOut)
+def create_cycle(group_id: str, payload: CycleCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    group = db.get(Group, group_id)
+    if not group:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Group not found")
+    require_organizer(db, group_id, current_user.id)
+    members = db.scalars(select(GroupMember).where(GroupMember.group_id == group_id, GroupMember.status == "active").order_by(GroupMember.position)).all()
+    if len(members) < 2:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "At least 2 active members are required")
+    latest = db.scalars(select(Cycle).where(Cycle.group_id == group_id).order_by(Cycle.cycle_number.desc())).first()
+    next_number = 1 if latest is None else latest.cycle_number + 1
+    receiver_member = members[(next_number - 1) % len(members)]
+    cycle = Cycle(group_id=group_id, cycle_number=next_number, receiver_user_id=receiver_member.user_id, due_date=payload.due_date)
+    db.add(cycle)
+    db.flush()
+    for member in members:
+        if member.user_id == receiver_member.user_id:
+            continue
+        db.add(
+            Contribution(
+                cycle_id=cycle.id,
+                payer_user_id=member.user_id,
+                receiver_user_id=receiver_member.user_id,
+                amount=group.contribution_amount,
+                status="pending",
+            )
+        )
+    log_action(db, "cycle_created", current_user.id, group_id, f"Cycle {next_number} created")
+    db.commit()
+    db.refresh(cycle)
+    return to_cycle_out(db, cycle)
+
+
+@app.post("/contributions/{contribution_id}/pay", response_model=ContributionOut)
+async def mark_paid(
+    contribution_id: str,
+    payment_reference: str = Form(default=""),
+    note: str = Form(default=""),
+    proof: UploadFile | None = File(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    contribution = db.get(Contribution, contribution_id)
+    if not contribution:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Contribution not found")
+    if contribution.payer_user_id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only the payer can mark this contribution as paid")
+    proof_url = contribution.proof_url
+    if proof and proof.filename:
+        safe_name = f"{contribution_id}-{secrets.token_hex(4)}-{os.path.basename(proof.filename)}"
+        path = os.path.join(settings.upload_dir, safe_name)
+        content = await proof.read()
+        with open(path, "wb") as f:
+            f.write(content)
+        proof_url = f"/uploads/{safe_name}"
+    contribution.status = "paid"
+    contribution.payment_reference = payment_reference.strip() or contribution.payment_reference
+    contribution.note = note.strip() or contribution.note
+    contribution.proof_url = proof_url
+    contribution.paid_at = datetime.now(timezone.utc)
+    user = db.get(User, current_user.id)
+    if user:
+        recalculate_trust_score(db, user)
+    cycle = db.get(Cycle, contribution.cycle_id)
+    log_action(db, "contribution_marked_paid", current_user.id, cycle.group_id if cycle else None, f"Contribution {contribution.id} marked paid")
+    db.commit()
+    db.refresh(contribution)
+    return to_contribution_out(db, contribution)
+
+
+@app.post("/contributions/{contribution_id}/confirm", response_model=ContributionOut)
+def confirm_contribution(contribution_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    contribution = db.get(Contribution, contribution_id)
+    if not contribution:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Contribution not found")
+    cycle = db.get(Cycle, contribution.cycle_id)
+    if not cycle:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Cycle not found")
+    if current_user.id != contribution.receiver_user_id:
+        require_organizer(db, cycle.group_id, current_user.id)
+    contribution.status = "confirmed"
+    contribution.confirmed_at = datetime.now(timezone.utc)
+    payer = db.get(User, contribution.payer_user_id)
+    if payer:
+        recalculate_trust_score(db, payer)
+    log_action(db, "contribution_confirmed", current_user.id, cycle.group_id, f"Contribution {contribution.id} confirmed")
+    db.commit()
+    db.refresh(contribution)
+    return to_contribution_out(db, contribution)
+
+
+@app.post("/contributions/{contribution_id}/dispute", response_model=ContributionOut)
+def dispute_contribution(contribution_id: str, payload: DisputeCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    contribution = db.get(Contribution, contribution_id)
+    if not contribution:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Contribution not found")
+    cycle = db.get(Cycle, contribution.cycle_id)
+    if not cycle:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Cycle not found")
+    require_member(db, cycle.group_id, current_user.id)
+    contribution.status = "disputed"
+    db.add(Dispute(contribution_id=contribution.id, opened_by_user_id=current_user.id, reason=payload.reason))
+    payer = db.get(User, contribution.payer_user_id)
+    if payer:
+        recalculate_trust_score(db, payer)
+    log_action(db, "contribution_disputed", current_user.id, cycle.group_id, payload.reason)
+    db.commit()
+    db.refresh(contribution)
+    return to_contribution_out(db, contribution)

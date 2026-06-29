@@ -1,0 +1,13 @@
+.DS_Store
+__pycache__/
+*.pyc
+backend/.venv/
+backend/rota.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+frontend/node_modules/
+frontend/dist/
+.env
+
+backend/data/*
+!backend/data/.gitkeep
