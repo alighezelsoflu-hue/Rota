@@ -81,6 +81,45 @@ export type GroupDetail = {
   audit_logs: AuditLog[]
 }
 
+export type NetworkNode = {
+  id: string
+  type: 'person' | 'group' | string
+  label: string
+  subtitle?: string | null
+  status?: string | null
+  role?: string | null
+  trust_score?: number | null
+  verification_status?: string | null
+  group_count?: number | null
+  member_count?: number | null
+  contribution_amount?: number | null
+  currency?: string | null
+  frequency?: string | null
+  health?: string | null
+}
+
+export type NetworkEdge = {
+  id: string
+  source: string
+  target: string
+  type: string
+  label?: string | null
+  status?: string | null
+  strength: number
+}
+
+export type NetworkGraph = {
+  nodes: NetworkNode[]
+  edges: NetworkEdge[]
+  stats: {
+    people: number
+    groups: number
+    connections: number
+    strong_connections: number
+    average_trust: number
+  }
+}
+
 export function getToken() {
   return localStorage.getItem('rota_token')
 }
@@ -122,6 +161,7 @@ export const api = {
   login: (payload: { email: string; password: string }) =>
     request<{ access_token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
   me: () => request<User>('/me'),
+  network: () => request<NetworkGraph>('/network'),
   groups: () => request<Group[]>('/groups'),
   createGroup: (payload: { name: string; contribution_amount: number; currency: string; frequency: string; member_limit: number; payout_method: string }) =>
     request<Group>('/groups', { method: 'POST', body: JSON.stringify(payload) }),

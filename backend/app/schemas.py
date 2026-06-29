@@ -154,3 +154,44 @@ class GroupDetail(BaseModel):
     cycles: list[CycleOut]
     contributions: list[ContributionOut]
     audit_logs: list[AuditLogOut]
+
+
+class NetworkNode(BaseModel):
+    id: str
+    type: str
+    label: str
+    subtitle: str | None = None
+    status: str | None = None
+    role: str | None = None
+    trust_score: int | None = None
+    verification_status: str | None = None
+    group_count: int | None = None
+    member_count: int | None = None
+    contribution_amount: float | None = None
+    currency: str | None = None
+    frequency: str | None = None
+    health: str | None = None
+
+
+class NetworkEdge(BaseModel):
+    id: str
+    source: str
+    target: str
+    type: str
+    label: str | None = None
+    status: str | None = None
+    strength: int = 1
+
+
+class NetworkStats(BaseModel):
+    people: int
+    groups: int
+    connections: int
+    strong_connections: int
+    average_trust: int
+
+
+class NetworkGraph(BaseModel):
+    nodes: list[NetworkNode]
+    edges: list[NetworkEdge]
+    stats: NetworkStats

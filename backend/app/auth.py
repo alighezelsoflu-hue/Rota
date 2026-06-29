@@ -37,15 +37,8 @@ def create_access_token(subject: str) -> str:
     expires = datetime.now(timezone.utc) + timedelta(
         minutes=settings.access_token_expire_minutes
     )
-    payload = {
-        "sub": subject,
-        "exp": expires,
-    }
-    return jwt.encode(
-        payload,
-        settings.jwt_secret,
-        algorithm=settings.jwt_algorithm,
-    )
+    payload = {"sub": subject, "exp": expires}
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
 def get_current_user(
@@ -57,7 +50,6 @@ def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
     try:
         payload = jwt.decode(
             token,
@@ -73,5 +65,4 @@ def get_current_user(
     user = db.get(User, user_id)
     if not user:
         raise credentials_exception
-
     return user

@@ -23,6 +23,10 @@ from .schemas import (
     GroupOut,
     JoinGroupRequest,
     MemberOut,
+    NetworkEdge,
+    NetworkGraph,
+    NetworkNode,
+    NetworkStats,
     Token,
     UserCreate,
     UserLogin,
@@ -140,6 +144,11 @@ def recalculate_trust_score(db: Session, user: User) -> None:
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "rota-mvp"}
+
+
+@app.get("/")
+def root():
+    return {"app": "Rota MVP API", "status": "live", "docs": "/docs", "health": "/health"}
 
 
 @app.post("/auth/register", response_model=Token)
@@ -350,3 +359,156 @@ def dispute_contribution(contribution_id: str, payload: DisputeCreate, db: Sessi
     db.commit()
     db.refresh(contribution)
     return to_contribution_out(db, contribution)
+
+
+@app.get("/network", response_model=NetworkGraph)
+def trust_network(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Return a person/group graph for the logged-in user's trust network."""
+    memberships = db.scalars(
+        select(GroupMember).where(GroupMember.user_id == current_user.id)
+    ).all()
+    group_ids = [m.group_id for m in memberships]
+
+    nodes_by_id: dict[str, NetworkNode] = {}
+    edges_by_id: dict[str, NetworkEdge] = {}
+    person_group_counts: dict[str, int] = {}
+    trust_scores: list[int] = []
+
+    def person_node_id(user_id: str) -> str:
+        return f"person:{user_id}"
+
+    def group_node_id(group_id: str) -> str:
+        return f"group:{group_id}"
+
+    def add_person(user: User, role: str | None = None, status: str | None = None):
+        node_id = person_node_id(user.id)
+        trust_scores.append(user.trust_score)
+        existing = nodes_by_id.get(node_id)
+        if existing:
+            if role == "current_user":
+                existing.role = "current_user"
+                existing.status = "you"
+            return
+        nodes_by_id[node_id] = NetworkNode(
+            id=node_id,
+            type="person",
+            label=user.name,
+            subtitle=user.email,
+            status=status or ("you" if user.id == current_user.id else "member"),
+            role=role or ("current_user" if user.id == current_user.id else "member"),
+            trust_score=user.trust_score,
+            verification_status=user.verification_status,
+            group_count=0,
+        )
+
+    add_person(current_user, role="current_user", status="you")
+
+    if not group_ids:
+        return NetworkGraph(
+            nodes=list(nodes_by_id.values()),
+            edges=[],
+            stats=NetworkStats(people=1, groups=0, connections=0, strong_connections=0, average_trust=current_user.trust_score),
+        )
+
+    groups = db.scalars(select(Group).where(Group.id.in_(group_ids))).all()
+    group_map = {g.id: g for g in groups}
+    all_members = db.scalars(
+        select(GroupMember).where(GroupMember.group_id.in_(group_ids)).order_by(GroupMember.joined_at)
+    ).all()
+    all_user_ids = sorted({m.user_id for m in all_members})
+    users = db.scalars(select(User).where(User.id.in_(all_user_ids))).all()
+    user_map = {u.id: u for u in users}
+
+    members_by_group: dict[str, list[GroupMember]] = {}
+    for member in all_members:
+        members_by_group.setdefault(member.group_id, []).append(member)
+        person_group_counts[member.user_id] = person_group_counts.get(member.user_id, 0) + 1
+
+    for group in groups:
+        members_for_group = members_by_group.get(group.id, [])
+        active_count = sum(1 for m in members_for_group if m.status == "active")
+        latest_cycle = db.scalars(
+            select(Cycle).where(Cycle.group_id == group.id).order_by(Cycle.cycle_number.desc())
+        ).first()
+        health = "active" if latest_cycle else "new"
+        if latest_cycle:
+            contributions = db.scalars(select(Contribution).where(Contribution.cycle_id == latest_cycle.id)).all()
+            if any(c.status == "disputed" for c in contributions):
+                health = "risk"
+            elif contributions and all(c.status == "confirmed" for c in contributions):
+                health = "healthy"
+            elif any(c.status == "paid" for c in contributions):
+                health = "in_progress"
+
+        nodes_by_id[group_node_id(group.id)] = NetworkNode(
+            id=group_node_id(group.id),
+            type="group",
+            label=group.name,
+            subtitle=f"{group.contribution_amount:g} {group.currency} · {group.frequency}",
+            status=group.status,
+            role="group",
+            member_count=active_count,
+            contribution_amount=group.contribution_amount,
+            currency=group.currency,
+            frequency=group.frequency,
+            health=health,
+        )
+
+    for member in all_members:
+        user = user_map.get(member.user_id)
+        group = group_map.get(member.group_id)
+        if not user or not group:
+            continue
+        add_person(user, role="current_user" if user.id == current_user.id else member.role, status="you" if user.id == current_user.id else member.status)
+        node = nodes_by_id.get(person_node_id(user.id))
+        if node:
+            node.group_count = person_group_counts.get(user.id, 0)
+            if user.id == current_user.id:
+                node.role = "current_user"
+                node.status = "you"
+        edge_type = "organizer" if member.role in {"organizer", "co_organizer"} else "membership"
+        edge_id = f"{person_node_id(user.id)}->{group_node_id(group.id)}"
+        edges_by_id[edge_id] = NetworkEdge(
+            id=edge_id,
+            source=person_node_id(user.id),
+            target=group_node_id(group.id),
+            type=edge_type,
+            label=member.role.replace("_", " "),
+            status=member.status,
+            strength=3 if edge_type == "organizer" else 1,
+        )
+
+    # Connect groups that share more than one person. This creates the community graph feeling.
+    group_list = list(groups)
+    for i, left in enumerate(group_list):
+        left_users = {m.user_id for m in members_by_group.get(left.id, [])}
+        for right in group_list[i + 1:]:
+            right_users = {m.user_id for m in members_by_group.get(right.id, [])}
+            shared = left_users.intersection(right_users)
+            if len(shared) >= 1:
+                edge_id = f"{group_node_id(left.id)}->{group_node_id(right.id)}"
+                edges_by_id[edge_id] = NetworkEdge(
+                    id=edge_id,
+                    source=group_node_id(left.id),
+                    target=group_node_id(right.id),
+                    type="shared_members",
+                    label=f"{len(shared)} shared member{'s' if len(shared) != 1 else ''}",
+                    status="connected",
+                    strength=min(5, 1 + len(shared)),
+                )
+
+    people_count = sum(1 for node in nodes_by_id.values() if node.type == "person")
+    groups_count = sum(1 for node in nodes_by_id.values() if node.type == "group")
+    average_trust = round(sum(set(trust_scores)) / max(1, len(set(trust_scores)))) if trust_scores else current_user.trust_score
+
+    return NetworkGraph(
+        nodes=list(nodes_by_id.values()),
+        edges=list(edges_by_id.values()),
+        stats=NetworkStats(
+            people=people_count,
+            groups=groups_count,
+            connections=len(edges_by_id),
+            strong_connections=sum(1 for e in edges_by_id.values() if e.strength >= 3),
+            average_trust=average_trust,
+        ),
+    )
