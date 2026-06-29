@@ -1529,3 +1529,713 @@ td a { color: #1d4ed8; font-weight: 800; }
     grid-template-columns: 1fr;
   }
 }
+/* -------------------------------------------------------
+   Improved simulator visual UI
+------------------------------------------------------- */
+
+.simulatorPageV2 {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 72px;
+}
+
+.simulatorHeroV2 {
+  border-radius: 34px;
+  padding: 34px;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.16), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.10), transparent 30%),
+    #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+  align-items: center;
+}
+
+.simulatorHeroV2 h1 {
+  margin: 6px 0 12px;
+  max-width: 760px;
+}
+
+.simulatorHeroV2 p {
+  color: #526071;
+  max-width: 760px;
+  line-height: 1.7;
+}
+
+.simulatorHeroBadges {
+  display: grid;
+  gap: 12px;
+  min-width: 220px;
+}
+
+.simulatorHeroBadges div {
+  padding: 18px;
+  border-radius: 24px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.simulatorHeroBadges strong,
+.simulatorHeroBadges span {
+  display: block;
+}
+
+.simulatorHeroBadges strong {
+  color: #0f172a;
+  font-size: 1.55rem;
+}
+
+.simulatorHeroBadges span {
+  color: #64748b;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.simulatorGridV2 {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.simulatorControlPanelV2,
+.simulatorVisualPanelV2,
+.timelineCardV2 {
+  border-radius: 34px;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.07);
+}
+
+.simulatorControlPanelV2 label {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  color: #334155;
+  font-weight: 800;
+}
+
+.simulatorControlPanelV2 input,
+.simulatorControlPanelV2 select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 18px;
+  padding: 14px 16px;
+  font: inherit;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.rangeRow {
+  display: grid;
+  grid-template-columns: 1fr 54px;
+  align-items: center;
+  gap: 12px;
+}
+
+.rangeRow strong {
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.formulaCardV2 {
+  margin-top: 22px;
+  padding: 18px;
+  border-radius: 24px;
+  background: #0f172a;
+  color: white;
+}
+
+.formulaCardV2 span,
+.formulaCardV2 strong,
+.formulaCardV2 em {
+  display: block;
+}
+
+.formulaCardV2 span {
+  color: rgba(255, 255, 255, 0.68);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.formulaCardV2 strong {
+  margin: 8px 0;
+  font-size: 1.3rem;
+}
+
+.formulaCardV2 em {
+  color: #86efac;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.circleVisualCard {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 26px;
+  align-items: center;
+  padding: 24px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.circleRingWrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+}
+
+.circleRing {
+  width: 180px;
+  height: 180px;
+  transform: rotate(-90deg);
+}
+
+.ringTrack {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 16;
+}
+
+.ringProgress {
+  fill: none;
+  stroke: #22c55e;
+  stroke-width: 16;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.ringCenter {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.ringCenter span,
+.ringCenter small {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.ringCenter strong {
+  display: block;
+  color: #0f172a;
+  font-size: 3.1rem;
+  line-height: 1;
+}
+
+.circleVisualText h2 {
+  margin: 4px 0 12px;
+}
+
+.circleVisualText p {
+  color: #526071;
+  line-height: 1.7;
+}
+
+.circleVisualText strong {
+  color: #15803d;
+}
+
+.simulatorResultCardsV2 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.simulatorResultCardsV2 div {
+  border-radius: 24px;
+  padding: 18px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+.simulatorResultCardsV2 span,
+.simulatorResultCardsV2 small,
+.simulatorResultCardsV2 strong {
+  display: block;
+}
+
+.simulatorResultCardsV2 span,
+.simulatorResultCardsV2 small {
+  color: #64748b;
+}
+
+.simulatorResultCardsV2 strong {
+  color: #0f172a;
+  font-size: 1.25rem;
+  margin: 7px 0 4px;
+}
+
+.moneyFlowStory {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.moneyFlowStory div {
+  padding: 18px;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.storyDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.storyDot.pay {
+  background: #f97316;
+}
+
+.storyDot.pot {
+  background: #2563eb;
+}
+
+.storyDot.zero {
+  background: #22c55e;
+}
+
+.moneyFlowStory strong,
+.moneyFlowStory p {
+  display: block;
+}
+
+.moneyFlowStory p {
+  margin: 6px 0 0;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.timelineCardV2 {
+  margin-top: 20px;
+}
+
+.cashFlowChartV2 {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  min-height: 280px;
+  overflow-x: auto;
+  padding: 22px 0 4px;
+}
+
+.cashFlowColumn {
+  min-width: 76px;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.cashFlowAmount {
+  color: #64748b;
+  font-weight: 800;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.cashFlowBarArea {
+  height: 170px;
+  display: flex;
+  align-items: end;
+}
+
+.cashFlowBarArea span {
+  width: 34px;
+  border-radius: 999px 999px 8px 8px;
+  display: block;
+  transition: height 0.3s ease;
+}
+
+.cashFlowBarArea .positive {
+  background: linear-gradient(180deg, #86efac, #16a34a);
+}
+
+.cashFlowBarArea .negative {
+  background: linear-gradient(180deg, #fdba74, #ea580c);
+}
+
+.cashFlowColumn.yourCycle {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  padding: 8px;
+}
+
+.cashFlowColumn strong {
+  color: #0f172a;
+}
+
+.cashFlowColumn small {
+  color: #64748b;
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------
+   Cleaner trust network graph
+------------------------------------------------------- */
+
+.networkLayoutV2 {
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 72px;
+}
+
+.networkHeroV2 {
+  border-radius: 34px;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.07);
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+}
+
+.networkHeroV2 h1 {
+  margin: 6px 0 12px;
+}
+
+.networkHeroV2 p {
+  color: #526071;
+  max-width: 760px;
+  line-height: 1.65;
+}
+
+.networkStatsV2 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.networkStatsV2 div {
+  padding: 20px;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 16px 44px rgba(15, 23, 42, 0.05);
+}
+
+.networkStatsV2 span,
+.networkStatsV2 strong {
+  display: block;
+}
+
+.networkStatsV2 span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.networkStatsV2 strong {
+  margin-top: 8px;
+  color: #0f172a;
+  font-size: 1.55rem;
+}
+
+.networkMainV2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
+}
+
+.networkMapCardV2,
+.networkDetailsV2 {
+  border-radius: 34px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.07);
+  padding: 28px;
+}
+
+.networkMapHeaderV2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.cleanLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cleanLegend span {
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #dbe4ef;
+  color: #475569;
+  font-weight: 800;
+}
+
+.cleanLegend i {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.cleanLegend .person {
+  background: #2563eb;
+}
+
+.cleanLegend .group {
+  background: #38bdf8;
+}
+
+.cleanLegend .organizer {
+  background: #22c55e;
+}
+
+.cleanGraphCanvas {
+  position: relative;
+  overflow: auto;
+  min-height: 540px;
+  border-radius: 30px;
+  border: 1px solid #dbe4ef;
+  background:
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    #f8fbff;
+  background-size: 54px 54px;
+}
+
+.graphColumnLabels {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 280px 380px 1fr;
+  padding: 14px 22px;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background: rgba(248, 251, 255, 0.88);
+  backdrop-filter: blur(10px);
+}
+
+.cleanGraphEdges {
+  position: absolute;
+  inset: 0;
+  width: 1100px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cleanGraphEdge {
+  fill: none;
+  stroke: #94a3b8;
+  stroke-width: 2.4;
+  opacity: 0.52;
+}
+
+.cleanGraphEdge.selected {
+  stroke: #2563eb;
+  stroke-width: 4;
+  opacity: 0.9;
+}
+
+.cleanGraphEdge.edge-organizer {
+  stroke: #22c55e;
+}
+
+.cleanGraphEdge.edge-shared_members {
+  stroke: #a855f7;
+  stroke-dasharray: 8 8;
+}
+
+.cleanGraphNode {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 230px;
+  min-height: 78px;
+  border: 1px solid #dbe4ef;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.10);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+  z-index: 3;
+}
+
+.cleanGraphNode:hover,
+.cleanGraphNode.selected {
+  border-color: #2563eb;
+  box-shadow: 0 24px 60px rgba(37, 99, 235, 0.20);
+}
+
+.cleanGraphNode.currentNode {
+  border-color: #22c55e;
+  box-shadow: 0 24px 70px rgba(34, 197, 94, 0.18);
+}
+
+.cleanGraphNode.groupNode {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.nodeAvatarV2 {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: #0f172a;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  flex: 0 0 auto;
+}
+
+.groupNode .nodeAvatarV2 {
+  background: #2563eb;
+}
+
+.currentNode .nodeAvatarV2 {
+  background: #16a34a;
+}
+
+.nodeTextV2 strong,
+.nodeTextV2 small {
+  display: block;
+}
+
+.nodeTextV2 strong {
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.nodeTextV2 small {
+  margin-top: 4px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.nodeDetailsBodyV2 h2 {
+  margin: 14px 0 8px;
+}
+
+.detailAvatarV2 {
+  width: 86px;
+  height: 86px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 1.4rem;
+}
+
+.detailAvatarV2.person {
+  background: #0f172a;
+}
+
+.detailAvatarV2.group {
+  background: #2563eb;
+}
+
+.detailFactsV2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.detailFactsV2 div {
+  border-radius: 20px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #dbe4ef;
+}
+
+.detailFactsV2 span,
+.detailFactsV2 strong {
+  display: block;
+}
+
+.detailFactsV2 span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.detailFactsV2 strong {
+  margin-top: 8px;
+  color: #0f172a;
+}
+
+.connectionListV2 h3 {
+  margin: 0 0 12px;
+}
+
+.connectionRowV2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 0;
+}
+
+.connectionRowV2 span {
+  color: #64748b;
+}
+
+.connectionRowV2 strong {
+  color: #0f172a;
+}
+
+@media (max-width: 1020px) {
+  .simulatorHeroV2,
+  .networkHeroV2,
+  .circleVisualCard {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .simulatorGridV2,
+  .networkMainV2,
+  .simulatorResultCardsV2,
+  .moneyFlowStory,
+  .networkStatsV2 {
+    grid-template-columns: 1fr;
+  }
+
+  .cleanGraphCanvas {
+    min-height: 700px;
+  }
+
+  .graphColumnLabels {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
