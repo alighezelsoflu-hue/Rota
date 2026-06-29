@@ -2,6 +2,8 @@ import React, { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { api, clearToken, getToken, setToken } from './api'
 import type { Contribution, Group, GroupDetail, NetworkEdge, NetworkGraph, NetworkNode, User } from './api'
+import CircleCalculator from './CircleCalculator'
+import ProductPrinciples from './ProductPrinciples'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -74,17 +76,17 @@ function Landing() {
       <section className="heroShell">
         <div className="heroCopy">
           <p className="eyebrow">Coordination-only savings circles</p>
-          <h1>Organize your savings circle with clarity and trust.</h1>
+          <h1>Build interest-free savings circles with people you trust.</h1>
           <p className="lead">
-            Rota helps ROSCA, tontine, susu, tanda, and jamiya groups manage contributions,
-            confirm payments, and track every cycle — without holding your money.
+            Rota helps ROSCA, tontine, susu, tanda, and jamiya groups coordinate contributions,
+            receive a lump sum in turn, and grow trusted decentralized circles — without holding your money.
           </p>
           <div className="actions">
             <Link className="button" to="/register">Create a group</Link>
             <Link className="button secondary" to="/login">Join / log in</Link>
           </div>
           <div className="safeNote">
-            <span>Important:</span> No wallet. No deposits. Members pay each other directly outside Rota.
+            <span>Important:</span> Your group charges no interest. No wallet. No deposits. Members pay each other directly.
           </div>
         </div>
 
@@ -115,7 +117,7 @@ function Landing() {
           </div>
         </div>
       </section>
-
+      <ProductPrinciples />
       <section id="how-it-works" className="sectionBlock">
         <div className="sectionIntro">
           <p className="eyebrow">How it works</p>
@@ -302,7 +304,7 @@ function Dashboard({ user }: { user: User }) {
         <div className="statCard"><span>Verification</span><strong>{user.verification_status}</strong></div>
         <div className="statCard"><span>Money held by Rota</span><strong>€0</strong></div>
       </section>
-
+      <ProductPrinciples compact />
       <section className="card mainPanel">
         <div className="panelHeader">
           <div>
@@ -489,7 +491,8 @@ function GroupPage({ user }: { user: User }) {
         <div className="statCard"><span>Marked paid</span><strong>{paidTotal} {detail.group.currency}</strong></div>
         <div className="statCard"><span>Pending rows</span><strong>{pendingCount}</strong></div>
       </section>
-
+      <CircleCalculator detail={detail} currentUserId={user.id} />
+      
       <section className="grid two">
         <div className="card cycleCard">
           <div className="panelHeader">

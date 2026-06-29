@@ -802,3 +802,427 @@ td a { color: #1d4ed8; font-weight: 800; }
     grid-template-columns: 1fr;
   }
 }
+
+/* -------------------------------------------------------
+   Rota product messages + circle calculator
+------------------------------------------------------- */
+
+.principlesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 28px 0;
+}
+
+.dashboardLayout > .principlesGrid {
+  grid-column: 1 / -1;
+}
+
+.compactPrinciples {
+  margin-top: 0;
+}
+
+.principleCard {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.10), transparent 36%),
+    #ffffff;
+  padding: 24px;
+  display: flex;
+  gap: 18px;
+  min-height: 220px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.07);
+}
+
+.principleCard h3 {
+  margin: 5px 0 10px;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: #0f172a;
+}
+
+.principleCard p {
+  margin: 0;
+  color: #526071;
+  line-height: 1.65;
+}
+
+.principleIcon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: #0f172a;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 1.05rem;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+}
+
+.principleCard.interestFree .principleIcon {
+  background: #16a34a;
+}
+
+.principleCard.decentralised .principleIcon {
+  background: #2563eb;
+}
+
+.principleCard.networkGrowth .principleIcon {
+  background: #7c3aed;
+}
+
+.inlineLink {
+  display: inline-flex;
+  margin-top: 14px;
+  font-weight: 800;
+  color: #0f766e;
+  text-decoration: none;
+}
+
+.circleCalculator {
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.10), transparent 32%),
+    #ffffff;
+}
+
+.calculatorHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.calculatorHeader h2 {
+  margin: 4px 0 8px;
+}
+
+.calculatorBadge {
+  min-width: 190px;
+  padding: 18px;
+  border-radius: 24px;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  text-align: center;
+}
+
+.calculatorBadge strong {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+  color: #15803d;
+  margin-bottom: 8px;
+}
+
+.calculatorBadge span {
+  color: #166534;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.calculatorMessageGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.calculatorMessage {
+  border-radius: 24px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.calculatorMessage span {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.calculatorMessage.interest span {
+  background: #16a34a;
+}
+
+.calculatorMessage.decentral span {
+  background: #2563eb;
+}
+
+.calculatorMessage.growth span {
+  background: #7c3aed;
+}
+
+.calculatorMessage h3 {
+  margin: 0 0 8px;
+  color: #0f172a;
+}
+
+.calculatorMessage p {
+  margin: 0;
+  color: #526071;
+  line-height: 1.55;
+}
+
+.calcStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0 22px;
+}
+
+.calcStat {
+  border-radius: 22px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  padding: 18px;
+}
+
+.calcStat span,
+.calcStat small {
+  display: block;
+  color: #64748b;
+}
+
+.calcStat strong {
+  display: block;
+  margin: 8px 0 6px;
+  font-size: 1.45rem;
+  color: #0f172a;
+}
+
+.calculatorExplainer {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 18px;
+  align-items: stretch;
+  padding: 20px;
+  border-radius: 26px;
+  background: #0f172a;
+  color: #ffffff;
+  margin-bottom: 24px;
+}
+
+.calculatorExplainer .eyebrow,
+.calculatorExplainer p {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.calculatorExplainer h3 {
+  margin: 4px 0 10px;
+  color: #ffffff;
+}
+
+.calculatorExplainer strong {
+  color: #86efac;
+}
+
+.miniCalcPanel {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.10);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.miniCalcPanel span,
+.miniCalcPanel small {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.miniCalcPanel strong {
+  font-size: 3rem;
+  line-height: 1;
+  margin: 8px 0;
+  color: #ffffff;
+}
+
+.payoutTimelineBlock {
+  margin-top: 20px;
+}
+
+.payoutTimeline {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.payoutTimelineItem {
+  display: grid;
+  grid-template-columns: 82px 1fr minmax(260px, 360px);
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+}
+
+.payoutTimelineItem.isYou {
+  border-color: #86efac;
+  background: linear-gradient(135deg, #ecfdf5, #ffffff);
+  box-shadow: 0 16px 36px rgba(22, 163, 74, 0.12);
+}
+
+.payoutTimelineItem.isOpenSeat {
+  background: #f8fafc;
+  border-style: dashed;
+}
+
+.timelineCycle {
+  width: 68px;
+  height: 68px;
+  border-radius: 22px;
+  background: #eef2ff;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.timelineCycle span {
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.timelineCycle strong {
+  display: block;
+  color: #3730a3;
+  font-size: 1.35rem;
+}
+
+.timelineReceiver strong {
+  display: block;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.timelineReceiver span {
+  color: #64748b;
+  font-size: 0.92rem;
+}
+
+.cashFlowVisual {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 10px;
+  align-items: center;
+}
+
+.cashFlowLabel {
+  grid-column: 1 / -1;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.cashFlowBar {
+  height: 12px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.cashFlowBar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.cashFlowBar .positive {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.cashFlowBar .negative {
+  background: linear-gradient(90deg, #f97316, #ea580c);
+}
+
+.positiveText {
+  color: #15803d;
+}
+
+.negativeText {
+  color: #c2410c;
+}
+
+.calculatorFootnote {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.calculatorFootnote div {
+  border-radius: 20px;
+  background: #f8fafc;
+  padding: 14px 16px;
+  color: #526071;
+}
+
+.calculatorFootnote strong {
+  color: #0f172a;
+}
+
+.networkGrowthCta {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #f0fdf4, #eff6ff);
+  border: 1px solid rgba(34, 197, 94, 0.20);
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+}
+
+.networkGrowthCta h3 {
+  margin: 4px 0 8px;
+}
+
+.networkGrowthCta p {
+  margin: 0;
+  color: #526071;
+}
+
+@media (max-width: 980px) {
+  .principlesGrid,
+  .calculatorMessageGrid,
+  .calcStatsGrid,
+  .calculatorFootnote {
+    grid-template-columns: 1fr;
+  }
+
+  .calculatorHeader,
+  .networkGrowthCta {
+    flex-direction: column;
+  }
+
+  .calculatorBadge {
+    width: 100%;
+  }
+
+  .calculatorExplainer {
+    grid-template-columns: 1fr;
+  }
+
+  .payoutTimelineItem {
+    grid-template-columns: 1fr;
+  }
+
+  .cashFlowVisual {
+    grid-template-columns: 1fr;
+  }
+}
