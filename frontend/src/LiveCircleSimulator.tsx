@@ -2,6 +2,29 @@ import { useMemo, useState } from 'react'
 
 type Frequency = 'weekly' | 'monthly'
 
+const DEFAULT_NAMES = [
+  'Ali',
+  'Sara',
+  'David',
+  'Mina',
+  'Omar',
+  'Lina',
+  'Reza',
+  'Nora',
+  'Sam',
+  'Leila',
+  'Amir',
+  'Ava',
+  'Yasmin',
+  'Daniel',
+  'Nika',
+  'Sofia',
+  'Arman',
+  'Maya',
+  'Noah',
+  'Tara',
+]
+
 function clamp(value: number, min: number, max: number) {
   if (Number.isNaN(value)) return min
   return Math.min(Math.max(value, min), max)
@@ -17,8 +40,16 @@ function periodLabel(frequency: Frequency) {
   return frequency === 'weekly' ? 'week' : 'month'
 }
 
+function periodTitle(frequency: Frequency) {
+  return frequency === 'weekly' ? 'Week' : 'Month'
+}
+
 function periodPlural(frequency: Frequency) {
   return frequency === 'weekly' ? 'weeks' : 'months'
+}
+
+function defaultName(index: number) {
+  return DEFAULT_NAMES[index] || `Member ${index + 1}`
 }
 
 export default function LiveCircleSimulator() {
@@ -26,52 +57,105 @@ export default function LiveCircleSimulator() {
   const [contribution, setContribution] = useState(100)
   const [currency, setCurrency] = useState('EUR')
   const [frequency, setFrequency] = useState<Frequency>('monthly')
-  const [payoutPosition, setPayoutPosition] = useState(4)
+  const [selectedCycle, setSelectedCycle] = useState(1)
+
+  const [names, setNames] = useState<string[]>(
+    Array.from({ length: 10 }).map((_, index) => defaultName(index)),
+  )
+
+  const [order, setOrder] = useState<number[]>(
+    Array.from({ length: 10 }).map((_, index) => index),
+  )
+
+  function updatePeople(nextPeople: number) {
+    const safePeople = clamp(nextPeople, 2, 30)
+
+    setPeople(safePeople)
+    setSelectedCycle(current => clamp(current, 1, safePeople))
+
+    setNames(current =>
+      Array.from({ length: safePeople }).map((_, index) => current[index] || defaultName(index)),
+    )
+
+    setOrder(current => {
+      const validExisting = current.filter(index => index < safePeople)
+      const missing = Array.from({ length: safePeople })
+        .map((_, index) => index)
+        .filter(index => !validExisting.includes(index))
+
+      return [...validExisting, ...missing].slice(0, safePeople)
+    })
+  }
+
+  function updateName(index: number, value: string) {
+    setNames(current => current.map((name, i) => (i === index ? value : name)))
+  }
+
+  function updateReceiverForCycle(cycleIndex: number, receiverIndex: number) {
+    setOrder(current => {
+      const next = [...current]
+      const existingCycle = next.findIndex(value => value === receiverIndex)
+
+      if (existingCycle >= 0) {
+        const oldReceiver = next[cycleIndex]
+        next[existingCycle] = oldReceiver
+      }
+
+      next[cycleIndex] = receiverIndex
+      return next
+    })
+  }
+
+  function resetOrder() {
+    setOrder(Array.from({ length: people }).map((_, index) => index))
+    setSelectedCycle(1)
+  }
+
+  function reverseOrder() {
+    setOrder(current => [...current].reverse())
+    setSelectedCycle(1)
+  }
 
   const result = useMemo(() => {
-    const safePeople = clamp(people, 2, 40)
-    const safeContribution = Math.max(1, contribution)
-    const safePosition = clamp(payoutPosition, 1, safePeople)
+    const safePeople = clamp(people, 2, 30)
+    const safeContribution = Math.max(1, contribution || 1)
+    const safeSelectedCycle = clamp(selectedCycle, 1, safePeople)
 
     const potPerCycle = safePeople * safeContribution
     const fullRotationContribution = safePeople * safeContribution
-    const paidBeforeTurn = (safePosition - 1) * safeContribution
-    const remainingAfterTurn = (safePeople - safePosition) * safeContribution
-    const netPayoutCycle = potPerCycle - safeContribution
-    const interestCharged = 0
+    const totalCircleVolume = potPerCycle * safePeople
+    const selectedReceiverIndex = order[safeSelectedCycle - 1] ?? 0
+    const selectedReceiverName = names[selectedReceiverIndex] || defaultName(selectedReceiverIndex)
 
     const timeline = Array.from({ length: safePeople }).map((_, index) => {
       const cycle = index + 1
-      const isMyTurn = cycle === safePosition
+      const receiverIndex = order[index] ?? index
+      const receiverName = names[receiverIndex] || defaultName(receiverIndex)
+      const isSelected = cycle === safeSelectedCycle
+
       return {
         cycle,
-        label: isMyTurn ? 'You receive the pot' : `You contribute`,
-        isMyTurn,
-        cashFlow: isMyTurn ? netPayoutCycle : -safeContribution,
-        totalPaidSoFar: Math.min(cycle, safePeople) * safeContribution,
+        receiverIndex,
+        receiverName,
+        isSelected,
+        pot: potPerCycle,
       }
     })
 
     return {
       safePeople,
       safeContribution,
-      safePosition,
+      safeSelectedCycle,
       potPerCycle,
       fullRotationContribution,
-      paidBeforeTurn,
-      remainingAfterTurn,
-      netPayoutCycle,
-      interestCharged,
+      totalCircleVolume,
+      selectedReceiverIndex,
+      selectedReceiverName,
       timeline,
     }
-  }, [people, contribution, payoutPosition])
+  }, [people, contribution, selectedCycle, order, names])
 
-  const maxBar = Math.max(
-    result.potPerCycle,
-    ...result.timeline.map(item => Math.abs(item.cashFlow)),
-  )
-
-  const payoutPercent = (result.safePosition / result.safePeople) * 100
+  const payoutPercent = (result.safeSelectedCycle / result.safePeople) * 100
   const ringCircumference = 2 * Math.PI * 74
   const ringOffset = ringCircumference - (payoutPercent / 100) * ringCircumference
 
@@ -80,17 +164,21 @@ export default function LiveCircleSimulator() {
       <section className="simulatorHeroV2">
         <div>
           <p className="eyebrow">Live circle simulator</p>
-          <h1>See how a circle turns small contributions into one large pot.</h1>
+          <h1>
+            {result.safePeople} people pay {money(result.safeContribution, currency)} each per{' '}
+            {periodLabel(frequency)}. One person receives{' '}
+            {money(result.potPerCycle, currency)} each cycle.
+          </h1>
           <p>
-            Adjust people, contribution amount, frequency, and your payout position.
-            Rota shows the pot size, your turn, and the full interest-free timeline.
+            Choose the payout order, select who receives in each {periodLabel(frequency)}, and show
+            the group how a 0% interest circle works before they create it.
           </p>
         </div>
 
         <div className="simulatorHeroBadges">
           <div>
             <strong>{money(result.potPerCycle, currency)}</strong>
-            <span>pot every cycle</span>
+            <span>pot each {periodLabel(frequency)}</span>
           </div>
           <div>
             <strong>0%</strong>
@@ -101,8 +189,8 @@ export default function LiveCircleSimulator() {
 
       <div className="simulatorGridV2">
         <aside className="simulatorControlPanelV2">
-          <p className="eyebrow">Build your scenario</p>
-          <h2>Circle inputs</h2>
+          <p className="eyebrow">Build your circle</p>
+          <h2>Inputs</h2>
 
           <label>
             People in the circle
@@ -110,13 +198,9 @@ export default function LiveCircleSimulator() {
               <input
                 type="range"
                 min="2"
-                max="40"
+                max="30"
                 value={result.safePeople}
-                onChange={event => {
-                  const next = Number(event.target.value)
-                  setPeople(next)
-                  setPayoutPosition(prev => clamp(prev, 1, next))
-                }}
+                onChange={event => updatePeople(Number(event.target.value))}
               />
               <strong>{result.safePeople}</strong>
             </div>
@@ -155,16 +239,16 @@ export default function LiveCircleSimulator() {
           </label>
 
           <label>
-            Your payout position
+            Preview cycle
             <div className="rangeRow">
               <input
                 type="range"
                 min="1"
                 max={result.safePeople}
-                value={result.safePosition}
-                onChange={event => setPayoutPosition(Number(event.target.value))}
+                value={result.safeSelectedCycle}
+                onChange={event => setSelectedCycle(Number(event.target.value))}
               />
-              <strong>{result.safePosition}</strong>
+              <strong>{result.safeSelectedCycle}</strong>
             </div>
           </label>
 
@@ -173,7 +257,7 @@ export default function LiveCircleSimulator() {
             <strong>
               {result.safePeople} × {money(result.safeContribution, currency)}
             </strong>
-            <em>= {money(result.potPerCycle, currency)} per cycle</em>
+            <em>= {money(result.potPerCycle, currency)} pot each {periodLabel(frequency)}</em>
           </div>
         </aside>
 
@@ -191,21 +275,25 @@ export default function LiveCircleSimulator() {
                   strokeDashoffset={ringOffset}
                 />
               </svg>
+
               <div className="ringCenter">
-                <span>Your turn</span>
-                <strong>{result.safePosition}</strong>
+                <span>{periodTitle(frequency)}</span>
+                <strong>{result.safeSelectedCycle}</strong>
                 <small>of {result.safePeople}</small>
               </div>
             </div>
 
             <div className="circleVisualText">
-              <p className="eyebrow">Your payout moment</p>
-              <h2>You receive {money(result.potPerCycle, currency)} in cycle {result.safePosition}.</h2>
+              <p className="eyebrow">Selected payout</p>
+              <h2>
+                {result.selectedReceiverName} receives {money(result.potPerCycle, currency)} in{' '}
+                {periodLabel(frequency)} {result.safeSelectedCycle}.
+              </h2>
               <p>
-                Before your turn you contribute{' '}
-                <strong>{money(result.paidBeforeTurn, currency)}</strong>.
-                After your turn you continue contributing{' '}
-                <strong>{money(result.remainingAfterTurn, currency)}</strong> so everyone receives.
+                Every member contributes{' '}
+                <strong>{money(result.safeContribution, currency)}</strong>. The selected receiver
+                gets the full pot of <strong>{money(result.potPerCycle, currency)}</strong>. Rota
+                charges <strong>{money(0, currency)}</strong> interest and does not hold the money.
               </p>
             </div>
           </div>
@@ -227,27 +315,34 @@ export default function LiveCircleSimulator() {
               <small>{periodPlural(frequency)}</small>
             </div>
             <div>
-              <span>Interest charged</span>
-              <strong>{money(result.interestCharged, currency)}</strong>
-              <small>your group charges no interest</small>
+              <span>Total circle volume</span>
+              <strong>{money(result.totalCircleVolume, currency)}</strong>
+              <small>across full rotation</small>
             </div>
           </div>
 
           <div className="moneyFlowStory">
             <div>
               <span className="storyDot pay" />
-              <strong>Small repeated contribution</strong>
-              <p>You pay {money(result.safeContribution, currency)} every {periodLabel(frequency)}.</p>
+              <strong>Small repeated payment</strong>
+              <p>
+                Each person pays {money(result.safeContribution, currency)} every{' '}
+                {periodLabel(frequency)}.
+              </p>
             </div>
+
             <div>
               <span className="storyDot pot" />
-              <strong>One large pot</strong>
-              <p>Each cycle creates {money(result.potPerCycle, currency)}.</p>
+              <strong>One person gets the pot</strong>
+              <p>
+                The selected receiver gets {money(result.potPerCycle, currency)} in their cycle.
+              </p>
             </div>
+
             <div>
               <span className="storyDot zero" />
-              <strong>No group interest</strong>
-              <p>The circle coordinates support. It does not create a bank loan.</p>
+              <strong>0% interest</strong>
+              <p>No bank loan, no platform wallet, no group interest. Members pay directly.</p>
             </div>
           </div>
         </section>
@@ -256,31 +351,109 @@ export default function LiveCircleSimulator() {
       <section className="timelineCardV2">
         <div className="panelHeader">
           <div>
-            <p className="eyebrow">Cash-flow timeline</p>
-            <h2>What happens across the full rotation</h2>
+            <p className="eyebrow">Payout order</p>
+            <h2>Select who receives the pot in each {periodLabel(frequency)}</h2>
+          </div>
+
+          <div className="actions noMargin">
+            <button className="button secondary" type="button" onClick={resetOrder}>
+              Reset order
+            </button>
+            <button className="button secondary" type="button" onClick={reverseOrder}>
+              Reverse order
+            </button>
+          </div>
+        </div>
+
+        <div className="payoutOrderGrid">
+          {result.timeline.map(item => (
+            <div
+              key={item.cycle}
+              className={item.isSelected ? 'payoutOrderCard selected' : 'payoutOrderCard'}
+              onClick={() => setSelectedCycle(item.cycle)}
+            >
+              <div className="payoutOrderCycle">
+                <span>{periodTitle(frequency)}</span>
+                <strong>{item.cycle}</strong>
+              </div>
+
+              <label>
+                Receiver
+                <select
+                  value={item.receiverIndex}
+                  onChange={event => updateReceiverForCycle(item.cycle - 1, Number(event.target.value))}
+                  onClick={event => event.stopPropagation()}
+                >
+                  {names.slice(0, result.safePeople).map((name, index) => (
+                    <option key={index} value={index}>
+                      {name || defaultName(index)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="payoutAmountPill">
+                {money(result.potPerCycle, currency)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="timelineCardV2">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">Member names</p>
+            <h2>Name the people in the circle</h2>
           </div>
           <span className="status confirmed">
-            {result.safePeople} cycles · {money(result.potPerCycle, currency)} pot
+            {result.safePeople} people · {money(result.potPerCycle, currency)} pot
+          </span>
+        </div>
+
+        <div className="memberNameGrid">
+          {names.slice(0, result.safePeople).map((name, index) => (
+            <label key={index}>
+              Member {index + 1}
+              <input
+                value={name}
+                onChange={event => updateName(index, event.target.value)}
+                placeholder={`Member ${index + 1}`}
+              />
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="timelineCardV2">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">Visual timeline</p>
+            <h2>Each cycle creates the same pot</h2>
+          </div>
+
+          <span className="status confirmed">
+            {result.safePeople} cycles · {money(result.potPerCycle, currency)} each
           </span>
         </div>
 
         <div className="cashFlowChartV2">
           {result.timeline.map(item => (
-            <div key={item.cycle} className={item.isMyTurn ? 'cashFlowColumn yourCycle' : 'cashFlowColumn'}>
+            <div
+              key={item.cycle}
+              className={item.isSelected ? 'cashFlowColumn yourCycle' : 'cashFlowColumn'}
+              onClick={() => setSelectedCycle(item.cycle)}
+            >
               <div className="cashFlowAmount">
-                {item.cashFlow >= 0 ? '+' : '-'}
-                {money(Math.abs(item.cashFlow), currency)}
+                {money(item.pot, currency)}
               </div>
+
               <div className="cashFlowBarArea">
-                <span
-                  className={item.cashFlow >= 0 ? 'positive' : 'negative'}
-                  style={{
-                    height: `${Math.max(12, (Math.abs(item.cashFlow) / maxBar) * 160)}px`,
-                  }}
-                />
+                <span className="positive" style={{ height: '160px' }} />
               </div>
+
               <strong>{item.cycle}</strong>
-              <small>{item.isMyTurn ? 'Your pot' : 'Pay'}</small>
+              <small>{item.receiverName}</small>
             </div>
           ))}
         </div>
