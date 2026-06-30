@@ -14,6 +14,8 @@ import RotaLogo from './RotaLogo'
 import NetworkBackground from './NetworkBackground'
 import ThemeToggle from './ThemeToggle'
 import TrustNetworkDashboard from './TrustNetworkDashboard'
+import GroupGovernancePanel from './GroupGovernancePanel'
+import ReceiptReviewActions from './ReceiptReviewActions'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -558,15 +560,16 @@ function NewGroup() {
       </form>
 
       <aside className="card guideCard">
-        <p className="eyebrow">Recommended MVP rules</p>
-        <h2>Keep the first groups simple</h2>
+        <p className="eyebrow">Circle rules</p>
+        <h2>Members agree before the loop starts</h2>
 
         <ul className="checkList">
           <li>Invite-only members</li>
-          <li>One currency per group</li>
-          <li>Fixed rotation payout order</li>
-          <li>Direct payments outside Rota</li>
-          <li>Proof upload and receiver confirmation</li>
+          <li>Members accept the Circle Commitment</li>
+          <li>Members stay after the first cycle starts</li>
+          <li>Group stops only if all members vote to stop</li>
+          <li>Organizer archives only after unanimous stop vote</li>
+          <li>Proof upload, receiver confirmation, and member receipt review</li>
         </ul>
 
         <Link className="button full secondary" to="/simulator">Open full simulator</Link>
@@ -619,16 +622,16 @@ function GroupPage({ user }: { user: User }) {
   if (!detail) return <p className="muted">Loading group...</p>
 
   const confirmedTotal = currentContributions
-    .filter(c => c.status === 'confirmed')
+    .filter(c => c.status === 'confirmed' || c.status === 'group_verified')
     .reduce((sum, c) => sum + c.amount, 0)
 
   const paidTotal = currentContributions
-    .filter(c => c.status === 'paid' || c.status === 'confirmed')
+    .filter(c => c.status === 'paid' || c.status === 'confirmed' || c.status === 'group_verified')
     .reduce((sum, c) => sum + c.amount, 0)
 
   const expectedTotal = currentContributions.reduce((sum, c) => sum + c.amount, 0)
   const pendingCount = currentContributions.filter(c => c.status === 'pending').length
-  const confirmedCount = currentContributions.filter(c => c.status === 'confirmed').length
+  const confirmedCount = currentContributions.filter(c => c.status === 'confirmed' || c.status === 'group_verified').length
   const progressPercent = expectedTotal ? (confirmedTotal / expectedTotal) * 100 : 0
 
   return (
@@ -657,6 +660,12 @@ function GroupPage({ user }: { user: User }) {
         <div className="statCard"><span>Marked paid</span><strong>{paidTotal} {detail.group.currency}</strong></div>
         <div className="statCard"><span>Pending rows</span><strong>{pendingCount}</strong></div>
       </section>
+
+      <GroupGovernancePanel
+        groupId={detail.group.id}
+        isOrganizer={isOrganizer}
+        onChanged={load}
+      />
 
       <CircleCalculator detail={detail} currentUserId={user.id} />
 
@@ -742,7 +751,17 @@ function GroupPage({ user }: { user: User }) {
         {currentContributions.length === 0 ? (
           <p className="mutedText">No contribution rows yet. Create a cycle to generate the ledger.</p>
         ) : (
-          <ContributionTable contributions={currentContributions} currency={detail.group.currency} />
+          <ContributionTable
+            contributions={currentContributions}
+            currency={detail.group.currency}
+            actions={c => (
+              <ReceiptReviewActions
+                contribution={c}
+                currentUserId={user.id}
+                onSaved={load}
+              />
+            )}
+          />
         )}
       </section>
 
@@ -893,7 +912,7 @@ function ConfirmTable({
         currency={currency}
         actions={c => (
           <div className="rowActions">
-            <button className="button mini" onClick={() => confirm(c.id)} disabled={c.status === 'confirmed'}>Confirm</button>
+            <button className="button mini" onClick={() => confirm(c.id)} disabled={c.status === 'confirmed' || c.status === 'group_verified'}>Confirm</button>
             <button className="ghost mini" onClick={() => dispute(c.id)}>Dispute</button>
           </div>
         )}
@@ -930,7 +949,7 @@ function ContributionTable({
             <tr key={c.id}>
               <td>{c.payer_name}</td>
               <td>{c.amount} {currency}</td>
-              <td><span className={`status ${c.status}`}>{c.status}</span></td>
+              <td><span className={`status ${c.status}`}>{c.status.replace(/_/g, ' ')}</span></td>
               <td>{c.payment_reference || '-'}</td>
               <td>{c.proof_url ? <a href={`${api.apiBase}${c.proof_url}`} target="_blank" rel="noreferrer">View proof</a> : '-'}</td>
               {actions && <td>{actions(c)}</td>}

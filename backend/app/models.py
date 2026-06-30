@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .database import Base
 
@@ -45,6 +45,16 @@ class Group(Base):
 
     members: Mapped[list["GroupMember"]] = relationship(back_populates="group", cascade="all, delete-orphan")
     cycles: Mapped[list["Cycle"]] = relationship(back_populates="group", cascade="all, delete-orphan")
+    agreement_required = Column(Boolean, default=True, nullable=False)
+    agreement_text = Column(Text, nullable=True)
+    agreement_version = Column(Integer, default=1, nullable=False)
+
+    locked_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    archived_at = Column(DateTime(timezone=True), nullable=True)
+
+    continuation_vote_cycle_id = Column(String, ForeignKey("cycles.id"), nullable=True)
+    continuation_vote_opened_at = Column(DateTime(timezone=True), nullable=True)
 
 
 class GroupMember(Base):
@@ -61,6 +71,10 @@ class GroupMember(Base):
 
     group: Mapped[Group] = relationship(back_populates="members")
     user: Mapped[User] = relationship(back_populates="memberships")
+    status = Column(String, default="active", nullable=False)
+    agreement_accepted_at = Column(DateTime(timezone=True), nullable=True)
+    agreement_version = Column(Integer, nullable=True)
+    has_received_payout = Column(Boolean, default=False, nullable=False)
 
 
 class Cycle(Base):
@@ -120,3 +134,42 @@ class AuditLog(Base):
     action: Mapped[str] = mapped_column(String(80), nullable=False)
     details: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+class GroupContinuationVote(Base):
+    __tablename__ = "group_continuation_votes"
+    __table_args__ = (
+        UniqueConstraint(
+            "group_id",
+            "cycle_id",
+            "voter_user_id",
+            name="uq_group_continuation_vote_once",
+        ),
+    )
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    group_id = Column(String, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False)
+    cycle_id = Column(String, ForeignKey("cycles.id", ondelete="CASCADE"), nullable=False)
+    voter_user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    decision = Column(String, nullable=False)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class ContributionMemberConfirmation(Base):
+    __tablename__ = "contribution_member_confirmations"
+    __table_args__ = (
+        UniqueConstraint(
+            "contribution_id",
+            "reviewer_user_id",
+            name="uq_contribution_member_review_once",
+        ),
+    )
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    contribution_id = Column(String, ForeignKey("contributions.id", ondelete="CASCADE"), nullable=False)
+    reviewer_user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    decision = Column(String, nullable=False)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
