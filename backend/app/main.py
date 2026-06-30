@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from .chat import router as chat_router
 
 from .auth import create_access_token, get_current_user, hash_password, verify_password
 from .database import Base, engine, get_db, settings
@@ -51,6 +52,7 @@ app.add_middleware(
 app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 app.include_router(governance_router)
 app.include_router(discovery_router)
+app.include_router(chat_router)
 
 
 DEFAULT_CIRCLE_AGREEMENT = """Circle Commitment

@@ -19,6 +19,8 @@ import ReceiptReviewActions from './ReceiptReviewActions'
 import DiscoverPage from './DiscoverPage'
 import ReviewsPage from './ReviewsPage'
 import MemberReviewPanel from './MemberReviewPanel'
+import MessagesPage from './MessagesPage'
+import GroupChatPanel from './GroupChatPanel'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -72,6 +74,7 @@ function Shell({
               <Link to="/dashboard">Dashboard</Link>
               <Link to="/network">Trust Network</Link>
               <Link to="/discover">Discover</Link>
+              <Link to="/messages">Messages</Link>
               <Link to="/simulator">Simulator</Link>
               <Link to="/groups/new">Create group</Link>
               <span className="trust">Trust {user.trust_score}</span>
@@ -395,6 +398,7 @@ function Dashboard({ user }: { user: User }) {
           <Link className="button secondary" to="/simulator">Open simulator</Link>
           <Link className="button secondary" to="/network">Open Trust Network</Link>
           <Link className="button secondary" to="/discover">Discover people</Link>
+          <Link className="button secondary" to="/messages">Messages</Link>
           <Link className="button" to="/groups/new">Create group</Link>
         </div>
       </section>
@@ -464,6 +468,13 @@ function Dashboard({ user }: { user: User }) {
 
             <button className="button full" type="submit">Join group</button>
           </form>
+        </section>
+
+        <section className="card networkTeaser">
+          <p className="eyebrow">Trusted Messages</p>
+          <h2>Chat with groups and accepted connections.</h2>
+          <p>Use group chat for circle coordination, and private chat after a connection request is accepted.</p>
+          <Link className="button full secondary" to="/messages">Open messages</Link>
         </section>
 
         <section className="card networkTeaser">
@@ -584,6 +595,7 @@ function NewGroup() {
           <li>Organizer archives only after unanimous stop vote</li>
           <li>Proof upload, receiver confirmation, and member receipt review</li>
           <li>Members can review each other after sharing a group</li>
+          <li>Group members can use circle chat</li>
         </ul>
 
         <Link className="button full secondary" to="/simulator">Open full simulator</Link>
@@ -754,6 +766,8 @@ function GroupPage({ user }: { user: User }) {
       </section>
 
       <MemberReviewPanel detail={detail} currentUserId={user.id} />
+
+      <GroupChatPanel groupId={detail.group.id} />
 
       {currentCycle && myContribution && (
         <PayCard contribution={myContribution} groupCurrency={detail.group.currency} onSaved={load} />
@@ -1042,6 +1056,15 @@ export default function App() {
           element={
             <RequireAuth user={auth.user} loading={auth.loading}>
               <DiscoverPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/messages"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <MessagesPage />
             </RequireAuth>
           }
         />

@@ -323,6 +323,29 @@ export type MemberReviewSummary = {
   }>
 }
 
+export type ChatThread = {
+  id: string
+  type: 'group' | 'direct'
+  group_id: string | null
+  label: string | null
+  group_name?: string | null
+  last_message?: string | null
+  last_message_at?: string | null
+  updated_at?: string | null
+}
+
+export type ChatMessage = {
+  id: string
+  thread_id: string
+  sender_user_id: string
+  sender_name: string
+  body: string
+  created_at?: string
+  edited_at?: string | null
+  deleted_at?: string | null
+  mine?: boolean
+}
+
 export const api = {
   apiBase: API_BASE,
 
@@ -548,6 +571,40 @@ export const api = {
     return request<{ ok: boolean; message: string }>(`/users/${reviewedUserId}/reviews`, {
       method: 'POST',
       body: JSON.stringify(payload),
+    })
+  },
+
+  chatThreads() {
+    return request<ChatThread[]>('/chat/threads')
+  },
+
+  groupChatThread(groupId: string) {
+    return request<ChatThread>(`/groups/${groupId}/chat-thread`, {
+      method: 'POST',
+    })
+  },
+
+  directChatThread(otherUserId: string) {
+    return request<ChatThread>(`/chat/direct/${otherUserId}`, {
+      method: 'POST',
+    })
+  },
+
+  chatMessages(threadId: string) {
+    return request<ChatMessage[]>(`/chat/threads/${threadId}/messages`)
+  },
+
+  sendChatMessage(threadId: string, body: string) {
+    return request<ChatMessage>(`/chat/threads/${threadId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ body }),
+    })
+  },
+
+  reportChatMessage(messageId: string, reason: string) {
+    return request<{ ok: boolean; message: string }>(`/chat/messages/${messageId}/report`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
     })
   },
 }

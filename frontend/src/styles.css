@@ -3886,3 +3886,282 @@ td a { color: #1d4ed8; font-weight: 800; }
   border-color: rgba(148, 163, 184, 0.22);
   color: #f8fafc;
 }
+
+/* -------------------------------------------------------
+   Chat / trusted messages
+------------------------------------------------------- */
+
+.messagesPage {
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 72px;
+}
+
+.messagesHero {
+  border-radius: 34px;
+  padding: 34px;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.12), transparent 32%),
+    rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.messagesHero p {
+  color: #526071;
+  max-width: 780px;
+  line-height: 1.7;
+}
+
+.messagesLayout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.messageSidebar,
+.messageWindow,
+.chatPanel {
+  border-radius: 34px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.messageSidebar {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+}
+
+.sidebarSection {
+  display: grid;
+  gap: 10px;
+}
+
+.threadButton,
+.connectionChatButton {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #dbe4ef;
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.threadButton:hover,
+.connectionChatButton:hover,
+.threadButton.selected {
+  border-color: #22c55e;
+  background: #ecfdf5;
+  transform: translateY(-1px);
+}
+
+.threadButton strong,
+.threadButton span,
+.threadButton small,
+.connectionChatButton strong,
+.connectionChatButton span {
+  display: block;
+}
+
+.threadButton strong,
+.connectionChatButton strong {
+  color: #0f172a;
+}
+
+.threadButton span,
+.connectionChatButton span {
+  color: #64748b;
+  font-weight: 800;
+  margin-top: 3px;
+}
+
+.threadButton small {
+  color: #64748b;
+  margin-top: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.messageWindow {
+  min-height: 680px;
+  display: flex;
+  flex-direction: column;
+}
+
+.messageWindowHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.chatSafetyNote {
+  border-radius: 18px;
+  padding: 12px 14px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+
+.chatMessages {
+  border-radius: 24px;
+  background: #f8fafc;
+  border: 1px solid #dbe4ef;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 420px;
+  overflow: auto;
+}
+
+.chatMessages.large {
+  flex: 1;
+  max-height: none;
+  min-height: 420px;
+}
+
+.chatBubble {
+  max-width: 78%;
+  border-radius: 22px;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  align-self: flex-start;
+}
+
+.chatBubble.mine {
+  background: #0f172a;
+  color: #ffffff;
+  align-self: flex-end;
+  border-color: #0f172a;
+}
+
+.chatBubble div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.chatBubble strong {
+  color: inherit;
+}
+
+.chatBubble small {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.chatBubble.mine small {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.chatBubble p {
+  margin: 8px 0 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.chatBubble .ghost {
+  margin-top: 8px;
+}
+
+.chatComposer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.chatComposer input {
+  border-radius: 18px;
+  border: 1px solid #dbe4ef;
+  padding: 14px 16px;
+  font: inherit;
+  outline: none;
+}
+
+.chatComposer input:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.chatPanel {
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 30%),
+    rgba(255, 255, 255, 0.92);
+}
+
+@media (max-width: 980px) {
+  .messagesLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .messageWindow {
+    min-height: auto;
+  }
+
+  .chatBubble {
+    max-width: 92%;
+  }
+}
+
+@media (max-width: 680px) {
+  .chatComposer {
+    grid-template-columns: 1fr;
+  }
+}
+
+:root[data-theme='dark'] .messagesHero,
+:root[data-theme='dark'] .messageSidebar,
+:root[data-theme='dark'] .messageWindow,
+:root[data-theme='dark'] .chatPanel,
+:root[data-theme='dark'] .chatMessages,
+:root[data-theme='dark'] .threadButton,
+:root[data-theme='dark'] .connectionChatButton,
+:root[data-theme='dark'] .chatComposer input {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .threadButton:hover,
+:root[data-theme='dark'] .connectionChatButton:hover,
+:root[data-theme='dark'] .threadButton.selected {
+  background: rgba(34, 197, 94, 0.12);
+}
+
+:root[data-theme='dark'] .threadButton strong,
+:root[data-theme='dark'] .connectionChatButton strong {
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] .chatBubble {
+  background: #020617;
+  border-color: rgba(148, 163, 184, 0.22);
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] .chatBubble.mine {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+:root[data-theme='dark'] .chatSafetyNote {
+  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(251, 146, 60, 0.25);
+  color: #fdba74;
+}
