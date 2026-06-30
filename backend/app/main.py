@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from .auth import create_access_token, get_current_user, hash_password, verify_password
 from .database import Base, engine, get_db, settings
 from .governance import router as governance_router
+from .discovery import router as discovery_router
 from .models import AuditLog, Contribution, Cycle, Dispute, Group, GroupMember, User
 from .schemas import (
     AuditLogOut,
@@ -49,6 +50,7 @@ app.add_middleware(
 
 app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 app.include_router(governance_router)
+app.include_router(discovery_router)
 
 
 DEFAULT_CIRCLE_AGREEMENT = """Circle Commitment

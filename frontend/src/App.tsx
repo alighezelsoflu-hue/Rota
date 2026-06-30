@@ -16,6 +16,9 @@ import ThemeToggle from './ThemeToggle'
 import TrustNetworkDashboard from './TrustNetworkDashboard'
 import GroupGovernancePanel from './GroupGovernancePanel'
 import ReceiptReviewActions from './ReceiptReviewActions'
+import DiscoverPage from './DiscoverPage'
+import ReviewsPage from './ReviewsPage'
+import MemberReviewPanel from './MemberReviewPanel'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -68,6 +71,7 @@ function Shell({
             <>
               <Link to="/dashboard">Dashboard</Link>
               <Link to="/network">Trust Network</Link>
+              <Link to="/discover">Discover</Link>
               <Link to="/simulator">Simulator</Link>
               <Link to="/groups/new">Create group</Link>
               <span className="trust">Trust {user.trust_score}</span>
@@ -78,6 +82,7 @@ function Shell({
             <>
               <a href="/#how-it-works">How it works</a>
               <a href="/#trust">Trust</a>
+              <Link to="/discover">Discover</Link>
               <Link to="/simulator">Simulator</Link>
               <ThemeToggle />
               <Link to="/login">Log in</Link>
@@ -389,6 +394,7 @@ function Dashboard({ user }: { user: User }) {
         <div className="actions noMargin">
           <Link className="button secondary" to="/simulator">Open simulator</Link>
           <Link className="button secondary" to="/network">Open Trust Network</Link>
+          <Link className="button secondary" to="/discover">Discover people</Link>
           <Link className="button" to="/groups/new">Create group</Link>
         </div>
       </section>
@@ -458,6 +464,13 @@ function Dashboard({ user }: { user: User }) {
 
             <button className="button full" type="submit">Join group</button>
           </form>
+        </section>
+
+        <section className="card networkTeaser">
+          <p className="eyebrow">Community Discovery</p>
+          <h2>Find people open to trusted circles.</h2>
+          <p>Opt in to discovery, find nearby people or groups, send requests, and build new circles carefully.</p>
+          <Link className="button full secondary" to="/discover">Open discovery</Link>
         </section>
 
         <section className="card networkTeaser">
@@ -570,6 +583,7 @@ function NewGroup() {
           <li>Group stops only if all members vote to stop</li>
           <li>Organizer archives only after unanimous stop vote</li>
           <li>Proof upload, receiver confirmation, and member receipt review</li>
+          <li>Members can review each other after sharing a group</li>
         </ul>
 
         <Link className="button full secondary" to="/simulator">Open full simulator</Link>
@@ -725,12 +739,21 @@ function GroupPage({ user }: { user: User }) {
                   <strong>{m.name}</strong>
                   <span>{m.email}</span>
                 </div>
-                <em>{m.role}</em>
+                <div className="memberRowActions">
+                  <em>{m.role}</em>
+                  {m.user_id !== user.id && (
+                    <Link className="ghost mini" to={`/reviews/${m.user_id}`}>
+                      Reviews
+                    </Link>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      <MemberReviewPanel detail={detail} currentUserId={user.id} />
 
       {currentCycle && myContribution && (
         <PayCard contribution={myContribution} groupCurrency={detail.group.currency} onSaved={load} />
@@ -835,7 +858,7 @@ function PayCard({
           Pay <strong>{contribution.amount} {groupCurrency}</strong> to{' '}
           <strong>{contribution.receiver_name}</strong> outside the app, then upload proof here.
         </p>
-        <p>Status: <span className={`status ${contribution.status}`}>{contribution.status}</span></p>
+        <p>Status: <span className={`status ${contribution.status}`}>{contribution.status.replace(/_/g, ' ')}</span></p>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -912,8 +935,16 @@ function ConfirmTable({
         currency={currency}
         actions={c => (
           <div className="rowActions">
-            <button className="button mini" onClick={() => confirm(c.id)} disabled={c.status === 'confirmed' || c.status === 'group_verified'}>Confirm</button>
-            <button className="ghost mini" onClick={() => dispute(c.id)}>Dispute</button>
+            <button
+              className="button mini"
+              onClick={() => confirm(c.id)}
+              disabled={c.status === 'confirmed' || c.status === 'group_verified'}
+            >
+              Confirm
+            </button>
+            <button className="ghost mini" onClick={() => dispute(c.id)}>
+              Dispute
+            </button>
           </div>
         )}
       />
@@ -1002,6 +1033,24 @@ export default function App() {
           element={
             <RequireAuth user={auth.user} loading={auth.loading}>
               <TrustNetworkDashboard />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/discover"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <DiscoverPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/reviews/:userId"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <ReviewsPage />
             </RequireAuth>
           }
         />
