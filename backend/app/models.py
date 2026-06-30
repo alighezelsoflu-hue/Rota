@@ -53,8 +53,8 @@ class Group(Base):
     completed_at = Column(DateTime(timezone=True), nullable=True)
     archived_at = Column(DateTime(timezone=True), nullable=True)
 
-    continuation_vote_cycle_id = Column(String, ForeignKey("cycles.id"), nullable=True)
-    continuation_vote_opened_at = Column(DateTime(timezone=True), nullable=True)
+    continuation_vote_cycle_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    continuation_vote_opened_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class GroupMember(Base):
