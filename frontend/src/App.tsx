@@ -5,9 +5,6 @@ import type {
   Contribution,
   Group,
   GroupDetail,
-  NetworkEdge,
-  NetworkGraph,
-  NetworkNode,
   User,
 } from './api'
 import CircleCalculator from './CircleCalculator'
@@ -15,6 +12,8 @@ import ProductPrinciples from './ProductPrinciples'
 import LiveCircleSimulator from './LiveCircleSimulator'
 import RotaLogo from './RotaLogo'
 import NetworkBackground from './NetworkBackground'
+import ThemeToggle from './ThemeToggle'
+import TrustNetworkDashboard from './TrustNetworkDashboard'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -70,6 +69,7 @@ function Shell({
               <Link to="/simulator">Simulator</Link>
               <Link to="/groups/new">Create group</Link>
               <span className="trust">Trust {user.trust_score}</span>
+              <ThemeToggle />
               <button className="ghost" onClick={onLogout}>Logout</button>
             </>
           ) : (
@@ -77,6 +77,7 @@ function Shell({
               <a href="/#how-it-works">How it works</a>
               <a href="/#trust">Trust</a>
               <Link to="/simulator">Simulator</Link>
+              <ThemeToggle />
               <Link to="/login">Log in</Link>
               <Link className="navButton" to="/register">Create account</Link>
             </>
@@ -466,9 +467,9 @@ function Dashboard({ user }: { user: User }) {
 
         <section className="card networkTeaser">
           <p className="eyebrow">Trust Network</p>
-          <h2>See how people and groups connect.</h2>
-          <p>Open the graph view to see members, groups, organizer links, and shared connections.</p>
-          <Link className="button full secondary" to="/network">View network graph</Link>
+          <h2>See circle health and trusted people.</h2>
+          <p>Open the Trust Network dashboard to inspect group health, trusted members, and relationship signals.</p>
+          <Link className="button full secondary" to="/network">View Trust Network</Link>
         </section>
 
         <section className="card safetyCard">
@@ -771,266 +772,6 @@ function GroupPage({ user }: { user: User }) {
   )
 }
 
-type PositionedNode = NetworkNode & { x: number; y: number }
-
-function nodeInitials(label: string) {
-  const parts = label.trim().split(/\s+/).slice(0, 2)
-  return parts.map(p => p[0]?.toUpperCase()).join('') || '?'
-}
-
-function buildNetworkLayout(graph: NetworkGraph) {
-  const width = 1100
-  const currentUser =
-    graph.nodes.find(n => n.type === 'person' && n.role === 'current_user') ||
-    graph.nodes.find(n => n.type === 'person')
-
-  const groups = graph.nodes.filter(n => n.type === 'group')
-  const otherPeople = graph.nodes.filter(n => n.type === 'person' && n.id !== currentUser?.id)
-
-  const groupYStart = 130
-  const rowGap = 140
-  const peopleGap = 96
-  const height = Math.max(540, groupYStart + Math.max(groups.length, otherPeople.length, 3) * rowGap)
-
-  const positioned: Record<string, PositionedNode> = {}
-
-  if (currentUser) {
-    positioned[currentUser.id] = {
-      ...currentUser,
-      x: 140,
-      y: height / 2,
-    }
-  }
-
-  groups.forEach((group, index) => {
-    positioned[group.id] = {
-      ...group,
-      x: 520,
-      y: groupYStart + index * rowGap,
-    }
-  })
-
-  otherPeople.forEach((person, index) => {
-    const membershipEdge = graph.edges.find(e => e.source === person.id && e.target.startsWith('group:'))
-    const connectedGroup = membershipEdge ? positioned[membershipEdge.target] : undefined
-
-    positioned[person.id] = {
-      ...person,
-      x: 890,
-      y: connectedGroup ? connectedGroup.y + ((index % 3) - 1) * 34 : 120 + index * peopleGap,
-    }
-  })
-
-  return { width, height, positioned }
-}
-
-function NetworkPage() {
-  const [graph, setGraph] = useState<NetworkGraph | null>(null)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [error, setError] = useState('')
-
-  async function load() {
-    const data = await api.network()
-    setGraph(data)
-    setSelectedId(current => current || data.nodes.find(n => n.role === 'current_user')?.id || data.nodes[0]?.id || null)
-  }
-
-  useEffect(() => {
-    load().catch(err => setError(err.message))
-  }, [])
-
-  const layout = useMemo(() => graph ? buildNetworkLayout(graph) : null, [graph])
-  const selected = graph?.nodes.find(n => n.id === selectedId) || graph?.nodes.find(n => n.role === 'current_user') || null
-  const connectedEdges = selected && graph ? graph.edges.filter(e => e.source === selected.id || e.target === selected.id) : []
-
-  if (error) return <p className="error">{error}</p>
-  if (!graph || !layout) return <p className="muted">Loading trust network...</p>
-
-  return (
-    <div className="networkLayoutV2">
-      <section className="networkHeroV2">
-        <div>
-          <p className="eyebrow">Trust Network</p>
-          <h1>A cleaner map of people, groups, and trust connections.</h1>
-          <p>
-            Rota shows your decentralized circles without making the graph messy:
-            you, your groups, and the members connected through each group.
-          </p>
-        </div>
-
-        <div className="actions noMargin">
-          <Link className="button secondary" to="/dashboard">Dashboard</Link>
-          <Link className="button secondary" to="/simulator">Simulator</Link>
-          <Link className="button" to="/groups/new">Create group</Link>
-        </div>
-      </section>
-
-      <section className="networkStatsV2">
-        <div><span>People</span><strong>{graph.stats.people}</strong></div>
-        <div><span>Groups</span><strong>{graph.stats.groups}</strong></div>
-        <div><span>Connections</span><strong>{graph.stats.connections}</strong></div>
-        <div><span>Average trust</span><strong>{graph.stats.average_trust}</strong></div>
-      </section>
-
-      <section className="networkMainV2">
-        <div className="networkMapCardV2">
-          <div className="networkMapHeaderV2">
-            <div>
-              <p className="eyebrow">Circle map</p>
-              <h2>Your live relationship graph</h2>
-            </div>
-
-            <div className="cleanLegend">
-              <span><i className="person" /> Person</span>
-              <span><i className="group" /> Group</span>
-              <span><i className="organizer" /> Organizer</span>
-            </div>
-          </div>
-
-          {graph.nodes.length <= 1 ? (
-            <div className="emptyState networkEmpty">
-              <h3>Your network starts with your first group</h3>
-              <p>Create or join a group. Rota will draw the people, groups, and connection lines automatically.</p>
-              <Link className="button" to="/groups/new">Create your first group</Link>
-            </div>
-          ) : (
-            <div className="cleanGraphCanvas" style={{ height: `${layout.height}px` }}>
-              <div className="graphColumnLabels">
-                <span>You</span>
-                <span>Groups</span>
-                <span>Members</span>
-              </div>
-
-              <svg viewBox={`0 0 ${layout.width} ${layout.height}`} className="cleanGraphEdges" preserveAspectRatio="none">
-                {graph.edges.map(edge => {
-                  const source = layout.positioned[edge.source]
-                  const target = layout.positioned[edge.target]
-
-                  if (!source || !target) return null
-
-                  const isSelected = selectedId === edge.source || selectedId === edge.target
-                  const curveMid = (source.x + target.x) / 2
-
-                  return (
-                    <path
-                      key={edge.id}
-                      d={`M ${source.x} ${source.y} C ${curveMid} ${source.y}, ${curveMid} ${target.y}, ${target.x} ${target.y}`}
-                      className={[
-                        'cleanGraphEdge',
-                        `edge-${edge.type}`,
-                        isSelected ? 'selected' : '',
-                      ].join(' ')}
-                    />
-                  )
-                })}
-              </svg>
-
-              {Object.values(layout.positioned).map(node => {
-                const isGroup = node.type === 'group'
-                const isCurrent = node.role === 'current_user'
-                const isSelected = selectedId === node.id
-
-                return (
-                  <button
-                    key={node.id}
-                    className={[
-                      'cleanGraphNode',
-                      isGroup ? 'groupNode' : 'personNode',
-                      isCurrent ? 'currentNode' : '',
-                      isSelected ? 'selected' : '',
-                    ].join(' ')}
-                    style={{
-                      left: `${node.x}px`,
-                      top: `${node.y}px`,
-                    }}
-                    onClick={() => setSelectedId(node.id)}
-                    type="button"
-                  >
-                    <span className="nodeAvatarV2">
-                      {isGroup ? '●' : nodeInitials(node.label)}
-                    </span>
-
-                    <span className="nodeTextV2">
-                      <strong>{node.label}</strong>
-                      <small>
-                        {isGroup
-                          ? `${node.member_count || 0} members · ${node.contribution_amount || 0} ${node.currency || ''}`
-                          : `Trust ${node.trust_score ?? '-'}`
-                        }
-                      </small>
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        <aside className="networkDetailsV2">
-          <p className="eyebrow">Selected node</p>
-          {selected ? (
-            <NodeDetails node={selected} edges={connectedEdges} />
-          ) : (
-            <p className="mutedText">Click a person or group to inspect it.</p>
-          )}
-        </aside>
-      </section>
-    </div>
-  )
-}
-
-function NodeDetails({ node, edges }: { node: NetworkNode; edges: NetworkEdge[] }) {
-  const isGroup = node.type === 'group'
-
-  return (
-    <div className="nodeDetailsBodyV2">
-      <div className={`detailAvatarV2 ${isGroup ? 'group' : 'person'}`}>
-        {isGroup ? '●' : nodeInitials(node.label)}
-      </div>
-
-      <h2>{node.label}</h2>
-      {node.subtitle && <p className="mutedText">{node.subtitle}</p>}
-
-      <div className="detailFactsV2">
-        {isGroup ? (
-          <>
-            <div><span>Contribution</span><strong>{node.contribution_amount || 0} {node.currency}</strong></div>
-            <div><span>Frequency</span><strong>{node.frequency || '-'}</strong></div>
-            <div><span>Members</span><strong>{node.member_count || 0}</strong></div>
-            <div><span>Health</span><strong>{(node.health || 'new').replace('_', ' ')}</strong></div>
-          </>
-        ) : (
-          <>
-            <div><span>Trust score</span><strong>{node.trust_score ?? '-'}</strong></div>
-            <div><span>Role</span><strong>{(node.role || 'member').replace('_', ' ')}</strong></div>
-            <div><span>Verification</span><strong>{node.verification_status || 'basic'}</strong></div>
-            <div><span>Groups</span><strong>{node.group_count || 0}</strong></div>
-          </>
-        )}
-      </div>
-
-      <div className="connectionListV2">
-        <h3>Connections</h3>
-
-        {edges.length === 0 ? (
-          <p className="mutedText">No connections yet.</p>
-        ) : (
-          edges.map(edge => (
-            <div key={edge.id} className="connectionRowV2">
-              <span>{edge.type.replace('_', ' ')}</span>
-              <strong>{edge.label || edge.status || 'connected'}</strong>
-            </div>
-          ))
-        )}
-      </div>
-
-      {isGroup && node.id.startsWith('group:') && (
-        <Link className="button full" to={`/groups/${node.id.replace('group:', '')}`}>Open group</Link>
-      )}
-    </div>
-  )
-}
-
 function PayCard({
   contribution,
   groupCurrency,
@@ -1191,7 +932,7 @@ function ContributionTable({
               <td>{c.amount} {currency}</td>
               <td><span className={`status ${c.status}`}>{c.status}</span></td>
               <td>{c.payment_reference || '-'}</td>
-              <td>{c.proof_url ? <a href={`${api.apiBase}${c.proof_url}`} target="_blank">View proof</a> : '-'}</td>
+              <td>{c.proof_url ? <a href={`${api.apiBase}${c.proof_url}`} target="_blank" rel="noreferrer">View proof</a> : '-'}</td>
               {actions && <td>{actions(c)}</td>}
             </tr>
           ))}
@@ -1218,6 +959,7 @@ export default function App() {
         <Route path="/login" element={<Login onLogin={auth.refresh} />} />
         <Route path="/register" element={<Register onLogin={auth.refresh} />} />
         <Route path="/simulator" element={<LiveCircleSimulator />} />
+
         <Route
           path="/dashboard"
           element={
@@ -1226,6 +968,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/groups/new"
           element={
@@ -1234,14 +977,16 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/network"
           element={
             <RequireAuth user={auth.user} loading={auth.loading}>
-              <NetworkPage />
+              <TrustNetworkDashboard />
             </RequireAuth>
           }
         />
+
         <Route
           path="/groups/:id"
           element={
