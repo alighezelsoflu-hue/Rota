@@ -7,6 +7,17 @@ import type {
   GroupDetail,
   User,
 } from './api'
+import {
+  ActionBanner,
+  Badge,
+  Button,
+  ButtonLink,
+  Card,
+  EmptyState,
+  PageHeader,
+  Skeleton,
+  StatCard,
+} from './ui'
 import CircleCalculator from './CircleCalculator'
 import ProductPrinciples from './ProductPrinciples'
 import LiveCircleSimulator from './LiveCircleSimulator'
@@ -26,6 +37,10 @@ import SettingsPage from './SettingsPage'
 import TrustPassportPage from './TrustPassportPage'
 import NotificationsBell from './NotificationsBell'
 import GroupHealthPanel from './GroupHealthPanel'
+import MobileBottomNav from './MobileBottomNav'
+import ProfileMenu from './ProfileMenu'
+import TodayPreview from './TodayPreview'
+import OnboardingPage from './OnboardingPage'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -73,21 +88,17 @@ function Shell({
           <RotaLogo />
         </Link>
 
-        <nav>
+        <nav className="desktopNav">
           {user ? (
             <>
               <Link to="/dashboard">Dashboard</Link>
               <Link to="/actions">Actions</Link>
-              <Link to="/network">Trust Network</Link>
               <Link to="/discover">Discover</Link>
               <Link to="/messages">Messages</Link>
-              <Link to="/simulator">Simulator</Link>
+              <Link to="/network">Trust Network</Link>
               <Link to="/groups/new">Create group</Link>
               <NotificationsBell />
-              <Link to="/settings">Settings</Link>
-              <span className="trust">Trust {user.trust_score}</span>
-              <ThemeToggle />
-              <button className="ghost" onClick={onLogout}>Logout</button>
+              <ProfileMenu user={user} onLogout={onLogout} />
             </>
           ) : (
             <>
@@ -104,6 +115,8 @@ function Shell({
       </header>
 
       <main className="container">{children}</main>
+
+      {user && <MobileBottomNav />}
     </div>
   )
 }
@@ -117,7 +130,7 @@ function RequireAuth({
   loading: boolean
   children: React.ReactNode
 }) {
-  if (loading) return <p className="muted">Loading...</p>
+  if (loading) return <Skeleton variant="page" />
   if (!user) return <Navigate to="/login" replace />
   return <>{children}</>
 }
@@ -139,23 +152,25 @@ function Landing() {
           </p>
 
           <div className="actions">
-            <Link className="button" to="/register">Create a group</Link>
-            <Link className="button secondary" to="/simulator">Try simulator</Link>
+            <ButtonLink to="/register">Create a group</ButtonLink>
+            <ButtonLink to="/simulator" variant="secondary">Try simulator</ButtonLink>
           </div>
 
-          <div className="safeNote">
-            <span>Important:</span> Your group charges no interest. No wallet. No deposits.
-            Members pay each other directly.
-          </div>
+          <ActionBanner
+            tone="success"
+            title="Rota does not hold money"
+            description="Your group charges no interest. No wallet, no deposits, no platform balance. Members pay each other directly."
+            icon="0%"
+          />
         </div>
 
-        <div className="heroDemo card">
+        <Card className="heroDemo">
           <div className="demoHeader">
             <div>
               <p className="eyebrow">Current cycle</p>
               <h3>Ali receives this month</h3>
             </div>
-            <span className="status confirmed">Live ledger</span>
+            <Badge tone="success" dot>Live ledger</Badge>
           </div>
 
           <div className="moneyLine">
@@ -179,7 +194,7 @@ function Landing() {
             <div><span className="dot wait" />Omar uploaded proof <strong>Waiting</strong></div>
             <div><span className="dot late" />Lina has not paid <strong>Pending</strong></div>
           </div>
-        </div>
+        </Card>
       </section>
 
       <ProductPrinciples />
@@ -191,28 +206,34 @@ function Landing() {
         </div>
 
         <div className="featureGrid three">
-          <article className="featureCard">
-            <span className="icon">1</span>
-            <h3>Create your circle</h3>
-            <p>Set the contribution amount, currency, frequency, member limit, and payout order.</p>
-          </article>
+          <Card compact>
+            <article className="featureCard">
+              <span className="icon">1</span>
+              <h3>Create your circle</h3>
+              <p>Set the contribution amount, currency, frequency, member limit, and payout order.</p>
+            </article>
+          </Card>
 
-          <article className="featureCard">
-            <span className="icon">2</span>
-            <h3>Members pay directly</h3>
-            <p>
-              Each cycle, members send money to the selected receiver using bank transfer,
-              mobile money, or cash.
-            </p>
-          </article>
+          <Card compact>
+            <article className="featureCard">
+              <span className="icon">2</span>
+              <h3>Members pay directly</h3>
+              <p>
+                Each cycle, members send money to the selected receiver using bank transfer,
+                mobile money, or cash.
+              </p>
+            </article>
+          </Card>
 
-          <article className="featureCard">
-            <span className="icon">3</span>
-            <h3>Proof is tracked</h3>
-            <p>
-              Members upload proof, receivers confirm receipt, and everyone sees the shared group ledger.
-            </p>
-          </article>
+          <Card compact>
+            <article className="featureCard">
+              <span className="icon">3</span>
+              <h3>Proof is tracked</h3>
+              <p>
+                Members upload proof, receivers confirm receipt, and everyone sees the shared group ledger.
+              </p>
+            </article>
+          </Card>
         </div>
       </section>
 
@@ -249,16 +270,16 @@ function Landing() {
         </div>
       </section>
 
-      <section className="finalCta card">
+      <Card className="finalCta">
         <p className="eyebrow">Start small</p>
         <h2>Use Rota first with people who already trust each other.</h2>
         <p>Invite your existing group, run one cycle, and check whether the ledger is clearer than paper or WhatsApp.</p>
 
         <div className="actions centered">
-          <Link className="button" to="/register">Create account</Link>
-          <Link className="button secondary" to="/simulator">Try simulator</Link>
+          <ButtonLink to="/register">Create account</ButtonLink>
+          <ButtonLink to="/simulator" variant="secondary">Try simulator</ButtonLink>
         </div>
-      </section>
+      </Card>
     </div>
   )
 }
@@ -285,12 +306,19 @@ function Login({ onLogin }: { onLogin: () => Promise<void> }) {
 
   return (
     <section className="authLayout">
-      <form className="card form authCard" onSubmit={submit}>
-        <p className="eyebrow">Welcome back</p>
+      <form className="uiCard form authCard" onSubmit={submit}>
+        <p className="uiEyebrow">Welcome back</p>
         <h1>Log in to Rota</h1>
         <p className="mutedText">Continue tracking your circles, contributions, confirmations, and group ledger.</p>
 
-        {error && <p className="error">{error}</p>}
+        {error && (
+          <ActionBanner
+            tone="danger"
+            title="Login failed"
+            description={error}
+            icon="!"
+          />
+        )}
 
         <label>
           Email
@@ -302,7 +330,7 @@ function Login({ onLogin }: { onLogin: () => Promise<void> }) {
           <input value={password} onChange={e => setPassword(e.target.value)} type="password" required />
         </label>
 
-        <button className="button full" type="submit">Log in</button>
+        <Button full type="submit">Log in</Button>
         <p className="smallText">New to Rota? <Link to="/register">Create an account</Link></p>
       </form>
     </section>
@@ -325,7 +353,8 @@ function Register({ onLogin }: { onLogin: () => Promise<void> }) {
       const token = await api.register({ name, email, phone, password })
       setToken(token.access_token)
       await onLogin()
-      navigate('/dashboard')
+      localStorage.removeItem('rota-onboarding-complete')
+      navigate('/onboarding')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     }
@@ -333,12 +362,19 @@ function Register({ onLogin }: { onLogin: () => Promise<void> }) {
 
   return (
     <section className="authLayout">
-      <form className="card form authCard" onSubmit={submit}>
-        <p className="eyebrow">Create your account</p>
+      <form className="uiCard form authCard" onSubmit={submit}>
+        <p className="uiEyebrow">Create your account</p>
         <h1>Start your first circle</h1>
         <p className="mutedText">Create or join invite-only contribution groups. Rota coordinates records, not money.</p>
 
-        {error && <p className="error">{error}</p>}
+        {error && (
+          <ActionBanner
+            tone="danger"
+            title="Registration failed"
+            description={error}
+            icon="!"
+          />
+        )}
 
         <label>
           Name
@@ -360,7 +396,7 @@ function Register({ onLogin }: { onLogin: () => Promise<void> }) {
           <input value={password} onChange={e => setPassword(e.target.value)} type="password" minLength={8} required />
         </label>
 
-        <button className="button full" type="submit">Create account</button>
+        <Button full type="submit">Create account</Button>
         <p className="smallText">Already have an account? <Link to="/login">Log in</Link></p>
       </form>
     </section>
@@ -371,14 +407,24 @@ function Dashboard({ user }: { user: User }) {
   const [groups, setGroups] = useState<Group[]>([])
   const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState('')
+  const [loadingGroups, setLoadingGroups] = useState(true)
   const navigate = useNavigate()
 
   async function load() {
-    setGroups(await api.groups())
+    setLoadingGroups(true)
+    setError('')
+
+    try {
+      setGroups(await api.groups())
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load groups')
+    } finally {
+      setLoadingGroups(false)
+    }
   }
 
   useEffect(() => {
-    load().catch(err => setError(err.message))
+    load()
   }, [])
 
   async function join(e: FormEvent) {
@@ -393,57 +439,93 @@ function Dashboard({ user }: { user: User }) {
     }
   }
 
+  const openGroups = groups.filter(group => group.status !== 'archived')
+  const reviewGroups = groups.filter(group => ['cycle_review', 'pending', 'forming'].includes(group.status))
+
   return (
     <div className="dashboardLayout">
-      <section className="dashboardHero card wide">
-        <div>
-          <p className="eyebrow">Dashboard</p>
-          <h1>Welcome, {user.name}</h1>
-          <p className="mutedText">Create groups, join with invite codes, and monitor contribution cycles from one place.</p>
-        </div>
+      <PageHeader
+        className="wide"
+        eyebrow="Dashboard"
+        title={`Welcome, ${user.name}`}
+        description="See what needs attention across your circles, messages, discovery requests, and trust network."
+        meta={
+          <>
+            <Badge status={user.verification_status} dot />
+            <Badge tone="success">Trust {user.trust_score}</Badge>
+          </>
+        }
+        actions={
+          <>
+            <ButtonLink to="/actions" variant="secondary">Actions</ButtonLink>
+            <ButtonLink to="/messages" variant="secondary">Messages</ButtonLink>
+            <ButtonLink to="/groups/new">Create group</ButtonLink>
+          </>
+        }
+      />
 
-        <div className="actions noMargin">
-          <Link className="button secondary" to="/simulator">Open simulator</Link>
-          <Link className="button secondary" to="/network">Open Trust Network</Link>
-          <Link className="button secondary" to="/discover">Discover people</Link>
-          <Link className="button secondary" to="/messages">Messages</Link>
-          <Link className="button" to="/groups/new">Create group</Link>
-        </div>
-      </section>
+      <TodayPreview />
 
-      {error && <p className="error wide">{error}</p>}
+      {error && (
+        <ActionBanner
+          className="wide"
+          tone="danger"
+          title="Something went wrong"
+          description={error}
+          icon="!"
+        />
+      )}
 
       <section className="statsGrid wide">
-        <div className="statCard"><span>Your groups</span><strong>{groups.length}</strong></div>
-        <div className="statCard"><span>Trust score</span><strong>{user.trust_score}</strong></div>
-        <div className="statCard"><span>Verification</span><strong>{user.verification_status}</strong></div>
-        <div className="statCard"><span>Money held by Rota</span><strong>€0</strong></div>
+        <StatCard label="Your groups" value={groups.length} icon="◎" tone="info" />
+        <StatCard label="Active circles" value={openGroups.length} icon="↗" tone="success" />
+        <StatCard label="Trust score" value={user.trust_score} icon="★" tone="success" />
+        <StatCard label="Money held by Rota" value="€0" icon="0%" tone="neutral" />
       </section>
+
+      {reviewGroups.length > 0 ? (
+        <ActionBanner
+          className="wide"
+          tone="warning"
+          title="Some circles may need attention"
+          description={`${reviewGroups.length} group${reviewGroups.length === 1 ? '' : 's'} are forming, pending, or in cycle review.`}
+          action={<ButtonLink to="/actions" variant="secondary" size="sm">Review actions</ButtonLink>}
+          icon="!"
+        />
+      ) : (
+        <ActionBanner
+          className="wide"
+          tone="success"
+          title="No urgent group actions"
+          description="Your dashboard is clear. Open your groups to review ledgers, chat, and agreement status."
+          action={<ButtonLink to="/discover" variant="secondary" size="sm">Discover circles</ButtonLink>}
+          icon="✓"
+        />
+      )}
 
       <ProductPrinciples compact />
 
-      <section className="card mainPanel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Your circles</p>
-            <h2>Active groups</h2>
-          </div>
-          <Link className="ghost" to="/groups/new">New group</Link>
-        </div>
-
-        {groups.length === 0 ? (
-          <div className="emptyState">
-            <h3>No groups yet</h3>
-            <p>Create your first group or join an existing one with an invite code.</p>
-            <Link className="button" to="/groups/new">Create your first group</Link>
-          </div>
+      <Card
+        className="mainPanel"
+        eyebrow="Your circles"
+        title="Active groups"
+        actions={<ButtonLink to="/groups/new" variant="secondary" size="sm">New group</ButtonLink>}
+      >
+        {loadingGroups ? (
+          <Skeleton variant="card" />
+        ) : groups.length === 0 ? (
+          <EmptyState
+            title="No groups yet"
+            description="Create your first circle or join an existing one with an invite code."
+            action={<ButtonLink to="/groups/new">Create your first group</ButtonLink>}
+          />
         ) : (
           <div className="groupCards">
             {groups.map(group => (
               <Link className="groupCard" key={group.id} to={`/groups/${group.id}`}>
                 <div className="groupTopline">
                   <strong>{group.name}</strong>
-                  <span className="status pending">{group.status}</span>
+                  <Badge status={group.status} />
                 </div>
 
                 <div className="groupMeta">
@@ -457,13 +539,10 @@ function Dashboard({ user }: { user: User }) {
             ))}
           </div>
         )}
-      </section>
+      </Card>
 
       <aside className="sideStack">
-        <section className="card">
-          <p className="eyebrow">Join existing circle</p>
-          <h2>Use invite code</h2>
-
+        <Card eyebrow="Join existing circle" title="Use invite code">
           <form onSubmit={join} className="form compact">
             <label>
               Invite code
@@ -474,43 +553,29 @@ function Dashboard({ user }: { user: User }) {
               />
             </label>
 
-            <button className="button full" type="submit">Join group</button>
+            <Button full type="submit">Join group</Button>
           </form>
-        </section>
+        </Card>
 
-        <section className="card networkTeaser">
-          <p className="eyebrow">Trusted Messages</p>
-          <h2>Chat with groups and accepted connections.</h2>
+        <Card eyebrow="Trusted Messages" title="Chat with groups and accepted connections.">
           <p>Use group chat for circle coordination, and private chat after a connection request is accepted.</p>
-          <Link className="button full secondary" to="/messages">Open messages</Link>
-        </section>
+          <ButtonLink full variant="secondary" to="/messages">Open messages</ButtonLink>
+        </Card>
 
-        <section className="card networkTeaser">
-          <p className="eyebrow">Community Discovery</p>
-          <h2>Find people open to trusted circles.</h2>
+        <Card eyebrow="Community Discovery" title="Find people open to trusted circles.">
           <p>Opt in to discovery, find nearby people or groups, send requests, and build new circles carefully.</p>
-          <Link className="button full secondary" to="/discover">Open discovery</Link>
-        </section>
+          <ButtonLink full variant="secondary" to="/discover">Open discovery</ButtonLink>
+        </Card>
 
-        <section className="card networkTeaser">
-          <p className="eyebrow">Circle Simulator</p>
-          <h2>Calculate before you create.</h2>
+        <Card eyebrow="Circle Simulator" title="Calculate before you create.">
           <p>Simulate how many people you need, how much each person contributes, and how much each cycle creates.</p>
-          <Link className="button full secondary" to="/simulator">Try simulator</Link>
-        </section>
+          <ButtonLink full variant="secondary" to="/simulator">Try simulator</ButtonLink>
+        </Card>
 
-        <section className="card networkTeaser">
-          <p className="eyebrow">Trust Network</p>
-          <h2>See circle health and trusted people.</h2>
+        <Card eyebrow="Trust Network" title="See circle health and trusted people.">
           <p>Open the Trust Network dashboard to inspect group health, trusted members, and relationship signals.</p>
-          <Link className="button full secondary" to="/network">View Trust Network</Link>
-        </section>
-
-        <section className="card safetyCard">
-          <p className="eyebrow">Safety model</p>
-          <h2>Rota tracks, your group pays.</h2>
-          <p>Members pay the selected receiver directly. Rota records payment proof, confirmations, and disputes.</p>
-        </section>
+          <ButtonLink full variant="secondary" to="/network">View Trust Network</ButtonLink>
+        </Card>
       </aside>
     </div>
   )
@@ -549,12 +614,19 @@ function NewGroup() {
 
   return (
     <div className="createLayout">
-      <form className="card form" onSubmit={submit}>
-        <p className="eyebrow">New contribution circle</p>
+      <form className="uiCard form" onSubmit={submit}>
+        <p className="uiEyebrow">New contribution circle</p>
         <h1>Create group</h1>
         <p className="mutedText">Start with a trusted invite-only group. You can share the invite code after creation.</p>
 
-        {error && <p className="error">{error}</p>}
+        {error && (
+          <ActionBanner
+            tone="danger"
+            title="Could not create group"
+            description={error}
+            icon="!"
+          />
+        )}
 
         <label>
           Group name
@@ -584,17 +656,17 @@ function NewGroup() {
           <input value={memberLimit} onChange={e => setMemberLimit(Number(e.target.value))} type="number" min="2" max="50" />
         </label>
 
-        <div className="safeNote">
-          <span>Estimated pot:</span> {memberLimit} members × {amount} {currency} = {estimatedPot} {currency} each cycle.
-        </div>
+        <ActionBanner
+          tone="success"
+          title="Estimated pot"
+          description={`${memberLimit} members × ${amount} ${currency} = ${estimatedPot} ${currency} each cycle.`}
+          icon="◎"
+        />
 
-        <button className="button full" type="submit">Create group</button>
+        <Button full type="submit">Create group</Button>
       </form>
 
-      <aside className="card guideCard">
-        <p className="eyebrow">Circle rules</p>
-        <h2>Members agree before the loop starts</h2>
-
+      <Card className="guideCard" eyebrow="Circle rules" title="Members agree before the loop starts">
         <ul className="checkList">
           <li>Invite-only members</li>
           <li>Members accept the Circle Commitment</li>
@@ -606,8 +678,8 @@ function NewGroup() {
           <li>Group members can use circle chat</li>
         </ul>
 
-        <Link className="button full secondary" to="/simulator">Open full simulator</Link>
-      </aside>
+        <ButtonLink full variant="secondary" to="/simulator">Open full simulator</ButtonLink>
+      </Card>
     </div>
   )
 }
@@ -620,11 +692,12 @@ function GroupPage({ user }: { user: User }) {
 
   async function load() {
     if (!id) return
+    setError('')
     setDetail(await api.groupDetail(id))
   }
 
   useEffect(() => {
-    load().catch(err => setError(err.message))
+    load().catch(err => setError(err instanceof Error ? err.message : 'Could not load group'))
   }, [id])
 
   const currentCycle = useMemo(() => detail?.cycles[0], [detail])
@@ -634,9 +707,23 @@ function GroupPage({ user }: { user: User }) {
     return detail.contributions.filter(c => c.cycle_id === currentCycle.id)
   }, [detail, currentCycle])
 
+  if (error) {
+    return (
+      <ActionBanner
+        tone="danger"
+        title="Could not load this group"
+        description={error}
+        icon="!"
+        action={<ButtonLink to="/dashboard" variant="secondary" size="sm">Back to dashboard</ButtonLink>}
+      />
+    )
+  }
+
+  if (!detail) return <Skeleton variant="page" />
+
   const myContribution = currentContributions.find(c => c.payer_user_id === user.id)
   const canConfirm = currentContributions.some(c => c.receiver_user_id === user.id)
-  const isOrganizer = detail?.members.some(m => m.user_id === user.id && ['organizer', 'co_organizer'].includes(m.role)) ?? false
+  const isOrganizer = detail.members.some(m => m.user_id === user.id && ['organizer', 'co_organizer'].includes(m.role))
 
   async function createCycle(e: FormEvent) {
     e.preventDefault()
@@ -651,9 +738,6 @@ function GroupPage({ user }: { user: User }) {
       setError(err instanceof Error ? err.message : 'Could not create cycle')
     }
   }
-
-  if (error) return <p className="error">{error}</p>
-  if (!detail) return <p className="muted">Loading group...</p>
 
   const confirmedTotal = currentContributions
     .filter(c => c.status === 'confirmed' || c.status === 'group_verified')
@@ -670,29 +754,56 @@ function GroupPage({ user }: { user: User }) {
 
   return (
     <div className="stack">
-      <section className="groupHero card">
-        <div>
-          <p className="eyebrow">Invite code: <strong>{detail.group.invite_code}</strong></p>
-          <h1>{detail.group.name}</h1>
-          <p className="mutedText">
-            {detail.group.contribution_amount} {detail.group.currency} • {detail.group.frequency} •{' '}
-            {detail.group.payout_method.replace('_', ' ')}
-          </p>
-        </div>
+      <PageHeader
+        eyebrow={`Invite code: ${detail.group.invite_code}`}
+        title={detail.group.name}
+        description={`${detail.group.contribution_amount} ${detail.group.currency} • ${detail.group.frequency} • ${detail.group.payout_method.replace(/_/g, ' ')}`}
+        meta={
+          <>
+            <Badge status={detail.group.status} dot />
+            <Badge tone="success">Rota holds €0</Badge>
+          </>
+        }
+        actions={
+          <>
+            <ButtonLink to="/messages" variant="secondary">Messages</ButtonLink>
+            <ButtonLink to="/dashboard" variant="ghost">Dashboard</ButtonLink>
+          </>
+        }
+      />
 
-        <div className="notice strongNotice">
-          Rota does not hold money. Members pay the receiver directly, then record proof here.
-        </div>
-      </section>
+      <ActionBanner
+        tone="info"
+        title="Rota does not hold money"
+        description="Members pay the receiver directly, then record proof, confirmation, and disputes here."
+        icon="0%"
+      />
 
       <section className="statsGrid">
-        <div className="statCard">
-          <span>Expected pot</span>
-          <strong>{expectedTotal || detail.group.contribution_amount * detail.members.length} {detail.group.currency}</strong>
-        </div>
-        <div className="statCard"><span>Confirmed</span><strong>{confirmedTotal} {detail.group.currency}</strong></div>
-        <div className="statCard"><span>Marked paid</span><strong>{paidTotal} {detail.group.currency}</strong></div>
-        <div className="statCard"><span>Pending rows</span><strong>{pendingCount}</strong></div>
+        <StatCard
+          label="Expected pot"
+          value={`${expectedTotal || detail.group.contribution_amount * detail.members.length} ${detail.group.currency}`}
+          icon="◎"
+          tone="info"
+        />
+        <StatCard
+          label="Confirmed"
+          value={`${confirmedTotal} ${detail.group.currency}`}
+          icon="✓"
+          tone="success"
+        />
+        <StatCard
+          label="Marked paid"
+          value={`${paidTotal} ${detail.group.currency}`}
+          icon="↗"
+          tone="warning"
+        />
+        <StatCard
+          label="Pending rows"
+          value={pendingCount}
+          icon="…"
+          tone={pendingCount > 0 ? 'warning' : 'success'}
+        />
       </section>
 
       <GroupHealthPanel groupId={detail.group.id} />
@@ -706,13 +817,13 @@ function GroupPage({ user }: { user: User }) {
       <CircleCalculator detail={detail} currentUserId={user.id} />
 
       <section className="grid two">
-        <div className="card cycleCard">
+        <Card className="cycleCard">
           <div className="panelHeader">
             <div>
-              <p className="eyebrow">Current cycle</p>
+              <p className="uiEyebrow">Current cycle</p>
               <h2>{currentCycle ? `Cycle ${currentCycle.cycle_number}` : 'No cycle yet'}</h2>
             </div>
-            {currentCycle && <span className="status confirmed">{confirmedCount}/{currentContributions.length} confirmed</span>}
+            {currentCycle && <Badge tone="success">{confirmedCount}/{currentContributions.length} confirmed</Badge>}
           </div>
 
           {currentCycle ? (
@@ -730,7 +841,10 @@ function GroupPage({ user }: { user: User }) {
               <p className="mutedText">{confirmedTotal} {detail.group.currency} confirmed out of {expectedTotal} expected.</p>
             </>
           ) : (
-            <p className="mutedText">The organizer can create the first cycle. Contributions will appear automatically.</p>
+            <EmptyState
+              title="No cycle yet"
+              description="The organizer can create the first cycle after members accept the Circle Commitment."
+            />
           )}
 
           {isOrganizer && (
@@ -740,19 +854,15 @@ function GroupPage({ user }: { user: User }) {
                 <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)} />
               </label>
 
-              <button className="button" type="submit">Create next cycle</button>
+              <Button type="submit">Create next cycle</Button>
             </form>
           )}
-        </div>
+        </Card>
 
-        <div className="card">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">Members</p>
-              <h2>{detail.members.length} members</h2>
-            </div>
-          </div>
-
+        <Card
+          title={`${detail.members.length} members`}
+          eyebrow="Members"
+        >
           <div className="memberList">
             {detail.members.map(m => (
               <div key={m.id} className="memberRow">
@@ -762,17 +872,17 @@ function GroupPage({ user }: { user: User }) {
                   <span>{m.email}</span>
                 </div>
                 <div className="memberRowActions">
-                  <em>{m.role}</em>
+                  <Badge status={m.role} tone={m.role === 'organizer' ? 'purple' : 'neutral'} />
                   {m.user_id !== user.id && (
-                    <Link className="ghost mini" to={`/reviews/${m.user_id}`}>
+                    <ButtonLink size="sm" variant="ghost" to={`/reviews/${m.user_id}`}>
                       Reviews
-                    </Link>
+                    </ButtonLink>
                   )}
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </section>
 
       <MemberReviewPanel detail={detail} currentUserId={user.id} />
@@ -787,16 +897,12 @@ function GroupPage({ user }: { user: User }) {
         <ConfirmTable contributions={currentContributions} currency={detail.group.currency} onSaved={load} />
       )}
 
-      <section className="card wide">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Shared record</p>
-            <h2>Contribution ledger</h2>
-          </div>
-        </div>
-
+      <Card wide eyebrow="Shared record" title="Contribution ledger">
         {currentContributions.length === 0 ? (
-          <p className="mutedText">No contribution rows yet. Create a cycle to generate the ledger.</p>
+          <EmptyState
+            title="No contribution rows yet"
+            description="Create a cycle to generate the shared ledger for this group."
+          />
         ) : (
           <ContributionTable
             contributions={currentContributions}
@@ -810,19 +916,15 @@ function GroupPage({ user }: { user: User }) {
             )}
           />
         )}
-      </section>
+      </Card>
 
-      <section className="card wide">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Transparency</p>
-            <h2>Audit log</h2>
-          </div>
-        </div>
-
+      <Card wide eyebrow="Transparency" title="Audit log">
         <div className="timeline">
           {detail.audit_logs.length === 0 ? (
-            <p className="mutedText">No activity yet.</p>
+            <EmptyState
+              title="No activity yet"
+              description="Group events, payment updates, confirmations, and governance actions will appear here."
+            />
           ) : detail.audit_logs.map(log => (
             <div key={log.id} className="timelineItem">
               <span />
@@ -833,7 +935,7 @@ function GroupPage({ user }: { user: User }) {
             </div>
           ))}
         </div>
-      </section>
+      </Card>
     </div>
   )
 }
@@ -874,18 +976,25 @@ function PayCard({
   }
 
   return (
-    <form className="card form paymentCard" onSubmit={submit}>
+    <form className="uiCard form paymentCard" onSubmit={submit}>
       <div>
-        <p className="eyebrow">Your action</p>
+        <p className="uiEyebrow">Your action</p>
         <h2>Record your payment proof</h2>
         <p>
           Pay <strong>{contribution.amount} {groupCurrency}</strong> to{' '}
           <strong>{contribution.receiver_name}</strong> outside the app, then upload proof here.
         </p>
-        <p>Status: <span className={`status ${contribution.status}`}>{contribution.status.replace(/_/g, ' ')}</span></p>
+        <p>Status: <Badge status={contribution.status} /></p>
       </div>
 
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <ActionBanner
+          tone="danger"
+          title="Could not save payment proof"
+          description={error}
+          icon="!"
+        />
+      )}
 
       <label>
         Payment reference
@@ -902,9 +1011,9 @@ function PayCard({
         <input type="file" accept="image/*,application/pdf" onChange={e => setProof(e.target.files?.[0] || null)} />
       </label>
 
-      <button className="button full" type="submit" disabled={saving}>
-        {saving ? 'Saving...' : 'I paid / upload proof'}
-      </button>
+      <Button full type="submit" loading={saving}>
+        I paid / upload proof
+      </Button>
     </form>
   )
 }
@@ -944,35 +1053,41 @@ function ConfirmTable({
   }
 
   return (
-    <section className="card wide">
-      <div className="panelHeader">
-        <div>
-          <p className="eyebrow">Receiver / organizer</p>
-          <h2>Confirm received payments</h2>
-        </div>
-      </div>
-
-      {error && <p className="error">{error}</p>}
+    <Card wide eyebrow="Receiver / organizer" title="Confirm received payments">
+      {error && (
+        <ActionBanner
+          tone="danger"
+          title="Payment review failed"
+          description={error}
+          icon="!"
+        />
+      )}
 
       <ContributionTable
         contributions={contributions}
         currency={currency}
         actions={c => (
           <div className="rowActions">
-            <button
-              className="button mini"
+            <Button
+              size="sm"
+              type="button"
               onClick={() => confirm(c.id)}
               disabled={c.status === 'confirmed' || c.status === 'group_verified'}
             >
               Confirm
-            </button>
-            <button className="ghost mini" onClick={() => dispute(c.id)}>
+            </Button>
+            <Button
+              size="sm"
+              type="button"
+              variant="ghost"
+              onClick={() => dispute(c.id)}
+            >
               Dispute
-            </button>
+            </Button>
           </div>
         )}
       />
-    </section>
+    </Card>
   )
 }
 
@@ -1004,7 +1119,7 @@ function ContributionTable({
             <tr key={c.id}>
               <td>{c.payer_name}</td>
               <td>{c.amount} {currency}</td>
-              <td><span className={`status ${c.status}`}>{c.status.replace(/_/g, ' ')}</span></td>
+              <td><Badge status={c.status} /></td>
               <td>{c.payment_reference || '-'}</td>
               <td>{c.proof_url ? <a href={`${api.apiBase}${c.proof_url}`} target="_blank" rel="noreferrer">View proof</a> : '-'}</td>
               {actions && <td>{actions(c)}</td>}
@@ -1035,46 +1150,19 @@ export default function App() {
         <Route path="/simulator" element={<LiveCircleSimulator />} />
 
         <Route
+          path="/onboarding"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <OnboardingPage user={auth.user!} />
+            </RequireAuth>
+          }
+        />
+
+        <Route
           path="/dashboard"
           element={
             <RequireAuth user={auth.user} loading={auth.loading}>
               <Dashboard user={auth.user!} />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/groups/new"
-          element={
-            <RequireAuth user={auth.user} loading={auth.loading}>
-              <NewGroup />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/network"
-          element={
-            <RequireAuth user={auth.user} loading={auth.loading}>
-              <TrustNetworkDashboard />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/discover"
-          element={
-            <RequireAuth user={auth.user} loading={auth.loading}>
-              <DiscoverPage />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/messages"
-          element={
-            <RequireAuth user={auth.user} loading={auth.loading}>
-              <MessagesPage />
             </RequireAuth>
           }
         />
@@ -1111,6 +1199,42 @@ export default function App() {
           element={
             <RequireAuth user={auth.user} loading={auth.loading}>
               <TrustPassportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/groups/new"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <NewGroup />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/network"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <TrustNetworkDashboard />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/discover"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <DiscoverPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/messages"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <MessagesPage />
             </RequireAuth>
           }
         />
