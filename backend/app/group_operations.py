@@ -516,25 +516,77 @@ def member_responsibilities(
     require_group_member(db, group_id, current_user.id)
     group_or_404(db, group_id)
 
-    cycle = latest_cycle(db, group_id)
+    group_member_columns = table_columns(db, "group_members")
+    contribution_columns = table_columns(db, "contributions")
+
+    agreement_select = (
+        "gm.agreement_accepted_at AS agreement_accepted_at"
+        if "agreement_accepted_at" in group_member_columns
+        else "NULL AS agreement_accepted_at"
+    )
+
+    payout_select = (
+        "COALESCE(gm.has_received_payout, FALSE) AS has_received_payout"
+        if "has_received_payout" in group_member_columns
+        else "FALSE AS has_received_payout"
+    )
+
+    member_status_select = (
+        "COALESCE(gm.status, 'active') AS member_status"
+        if "status" in group_member_columns
+        else "'active' AS member_status"
+    )
+
+    member_status_filter = (
+        "AND COALESCE(gm.status, 'active') != 'removed_before_start'"
+        if "status" in group_member_columns
+        else ""
+    )
+
+    cycle = db.execute(
+        text(
+            """
+            SELECT
+              cy.id,
+              cy.cycle_number,
+              cy.status,
+              cy.due_date,
+              receiver_user.name AS receiver_name,
+              receiver_user.email AS receiver_email
+            FROM cycles cy
+            LEFT JOIN LATERAL (
+              SELECT c.receiver_user_id
+              FROM contributions c
+              WHERE c.cycle_id = cy.id
+              LIMIT 1
+            ) receiver_lookup ON TRUE
+            LEFT JOIN users receiver_user
+              ON receiver_user.id = receiver_lookup.receiver_user_id
+            WHERE cy.group_id = :group_id
+            ORDER BY cy.cycle_number DESC
+            LIMIT 1
+            """
+        ),
+        {"group_id": group_id},
+    ).mappings().first()
 
     members = db.execute(
         text(
-            """
+            f"""
             SELECT
               gm.id AS member_id,
               gm.user_id,
               gm.role,
-              COALESCE(gm.status, 'active') AS member_status,
-              gm.agreement_accepted_at,
-              COALESCE(gm.has_received_payout, FALSE) AS has_received_payout,
+              {member_status_select},
+              {agreement_select},
+              {payout_select},
               u.name,
               u.email,
               COALESCE(u.trust_score, 0) AS trust_score
             FROM group_members gm
             JOIN users u ON u.id = gm.user_id
             WHERE gm.group_id = :group_id
-              AND COALESCE(gm.status, 'active') != 'removed_before_start'
+              {member_status_filter}
             ORDER BY
               CASE gm.role
                 WHEN 'organizer' THEN 1
@@ -550,17 +602,35 @@ def member_responsibilities(
     contribution_by_payer: dict[str, dict[str, Any]] = {}
 
     if cycle:
+        payment_reference_select = (
+            "c.payment_reference AS payment_reference"
+            if "payment_reference" in contribution_columns
+            else "NULL AS payment_reference"
+        )
+
+        proof_url_select = (
+            "c.proof_url AS proof_url"
+            if "proof_url" in contribution_columns
+            else "NULL AS proof_url"
+        )
+
+        contribution_updated_select = (
+            "c.updated_at AS updated_at"
+            if "updated_at" in contribution_columns
+            else "NULL AS updated_at"
+        )
+
         contributions = db.execute(
             text(
-                """
+                f"""
                 SELECT
                   c.id,
                   c.payer_user_id,
                   c.amount,
                   c.status,
-                  c.payment_reference,
-                  c.proof_url,
-                  c.updated_at,
+                  {payment_reference_select},
+                  {proof_url_select},
+                  {contribution_updated_select},
                   cy.due_date
                 FROM contributions c
                 JOIN cycles cy ON cy.id = c.cycle_id
@@ -618,7 +688,6 @@ def member_responsibilities(
         }
 
     member_rows: list[dict[str, Any]] = []
-
     now = datetime.now(timezone.utc)
 
     for member in members:
@@ -628,23 +697,25 @@ def member_responsibilities(
         if contribution:
             due_date = contribution.get("due_date")
 
-            if due_date and due_date.tzinfo is None:
-                due_date = due_date.replace(tzinfo=timezone.utc)
+            is_late_candidate = False
 
-            is_late_candidate = (
-                contribution["status"] == "pending"
-                and due_date is not None
-                and due_date < now
-            )
+            if isinstance(due_date, datetime):
+                if due_date.tzinfo is None:
+                    due_date = due_date.replace(tzinfo=timezone.utc)
+
+                is_late_candidate = (
+                    contribution["status"] == "pending"
+                    and due_date < now
+                )
 
             item.update(
                 {
                     "contribution_id": contribution["id"],
                     "amount": contribution["amount"],
                     "contribution_status": contribution["status"],
-                    "payment_reference": contribution["payment_reference"],
-                    "proof_url": contribution["proof_url"],
-                    "contribution_updated_at": contribution["updated_at"],
+                    "payment_reference": contribution.get("payment_reference"),
+                    "proof_url": contribution.get("proof_url"),
+                    "contribution_updated_at": contribution.get("updated_at"),
                     "is_late_candidate": is_late_candidate,
                     "has_open_dispute": contribution["id"] in open_dispute_contribution_ids,
                     "has_open_late_case": contribution["id"] in open_late_contribution_ids,
