@@ -143,6 +143,7 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
   }
 
   const actionBadgeTone = highPriorityCount > 0 ? 'danger' : 'warning'
+
   const moreIsActive = [
     '/settings',
     '/trust-passport',
@@ -153,14 +154,14 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
   ].some(path => location.pathname.startsWith(path))
 
   const menuLinks = [
-    { to: '/dashboard', icon: '⌂', label: 'Dashboard', description: 'Your circles and today view' },
+    { to: '/dashboard', icon: '◎', label: 'My Groups', description: 'Your circles and today view' },
     { to: '/actions', icon: '!', label: 'Actions', description: 'Payments, votes, requests' },
-    { to: '/discover', icon: '◎', label: 'Discover', description: 'People and open groups' },
+    { to: '/discover', icon: '↗', label: 'Discover', description: 'People and open groups' },
     { to: '/messages', icon: '✉', label: 'Messages', description: 'Group and direct chats' },
-    { to: '/network', icon: '↗', label: 'Trust Network', description: 'Trusted people and graph' },
+    { to: '/network', icon: '⌁', label: 'Trust Network Map', description: 'Trusted people and graph' },
     { to: '/groups/new', icon: '+', label: 'Create group', description: 'Start a new circle' },
     { to: '/simulator', icon: '∑', label: 'Simulator', description: 'Plan contribution circles' },
-    { to: '/trust-passport', icon: '★', label: 'Trust Passport', description: 'Your trust profile' },
+    { to: '/trust-passport', icon: '★', label: 'My Trust Passport', description: 'Your trust profile' },
     { to: '/settings', icon: '⚙', label: 'Settings', description: 'Profile and notifications' },
   ]
 
@@ -168,8 +169,8 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
     <>
       <nav className="mobileBottomNav" aria-label="Main mobile navigation">
         <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>
-          <span className="mobileNavIcon">⌂</span>
-          <span>Home</span>
+          <span className="mobileNavIcon">◎</span>
+          <span>My Groups</span>
         </NavLink>
 
         <NavLink to="/actions" className={({ isActive }) => isActive ? 'active' : ''}>
@@ -179,7 +180,7 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
         </NavLink>
 
         <NavLink to="/discover" className={({ isActive }) => isActive ? 'active' : ''}>
-          <span className="mobileNavIcon">◎</span>
+          <span className="mobileNavIcon">↗</span>
           <span>Discover</span>
         </NavLink>
 

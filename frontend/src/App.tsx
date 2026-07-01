@@ -47,6 +47,7 @@ import GroupMembersTab from './GroupMembersTab'
 import GroupMessagesTab from './GroupMessagesTab'
 import GroupReviewsTab from './GroupReviewsTab'
 import GroupManageTab from './GroupManageTab'
+import InviteCodeJoinCard from './InviteCodeJoinCard'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -568,21 +569,7 @@ function Dashboard({ user }: { user: User }) {
       </Card>
 
       <aside className="sideStack">
-        <Card eyebrow="Join existing circle" title="Use invite code">
-          <form onSubmit={join} className="form compact">
-            <label>
-              Invite code
-              <input
-                value={inviteCode}
-                onChange={event => setInviteCode(event.target.value.toUpperCase())}
-                placeholder="Example: ABC123"
-              />
-            </label>
-
-            <Button full type="submit">Join or request access</Button>
-          </form>
-        </Card>
-
+        <InviteCodeJoinCard />
         <Card eyebrow="Trusted Messages" title="Chat with groups and accepted connections.">
           <p>Use group chat for circle coordination, and private chat after a connection request is accepted.</p>
           <ButtonLink full variant="secondary" to="/messages">Open messages</ButtonLink>
