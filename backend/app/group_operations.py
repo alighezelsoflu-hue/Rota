@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from .auth import get_current_user
 from .database import get_db
 from .models import User
+from .member_admission import join_invite_for_user
 
 router = APIRouter(tags=["group operations"])
 
@@ -27,7 +28,7 @@ class GroupRulesUpdate(BaseModel):
 
 class InviteControlsUpdate(BaseModel):
     invite_enabled: bool = True
-    invite_approval_required: bool = False
+    invite_approval_required: bool = True
     invite_expires_at: str | None = None
     invite_max_uses: int | None = Field(default=None, ge=1, le=10000)
     min_trust_score_to_join: int = Field(default=0, ge=0, le=100)
@@ -90,15 +91,26 @@ def table_columns(db: Session, table_name: str) -> set[str]:
     return {row["column_name"] for row in rows}
 
 
+def active_member_filter(alias: str = "gm") -> str:
+    return f"COALESCE({alias}.status, 'active') NOT IN ('removed_before_start', 'left', 'removed')"
+
+
 def require_group_member(db: Session, group_id: str, user_id: str):
+    group_member_columns = table_columns(db, "group_members")
+
+    if "status" in group_member_columns:
+        status_clause = f"AND {active_member_filter('gm')}"
+    else:
+        status_clause = ""
+
     member = db.execute(
         text(
-            """
+            f"""
             SELECT *
-            FROM group_members
-            WHERE group_id = :group_id
-              AND user_id = :user_id
-              AND COALESCE(status, 'active') != 'removed_before_start'
+            FROM group_members gm
+            WHERE gm.group_id = :group_id
+              AND gm.user_id = :user_id
+              {status_clause}
             """
         ),
         {"group_id": group_id, "user_id": user_id},
@@ -197,7 +209,11 @@ def latest_cycle(db: Session, group_id: str):
         text(
             """
             SELECT
-              cy.*,
+              cy.id,
+              cy.group_id,
+              cy.cycle_number,
+              cy.status,
+              cy.due_date,
               receiver_user.name AS receiver_name,
               receiver_user.email AS receiver_email
             FROM cycles cy
@@ -239,12 +255,12 @@ def current_contribution_stats(db: Session, cycle_id: str | None):
               COALESCE(SUM(c.amount), 0) AS expected_total,
               COALESCE(SUM(CASE WHEN c.status IN ('paid', 'confirmed', 'group_verified') THEN c.amount ELSE 0 END), 0) AS paid_total,
               COALESCE(SUM(CASE WHEN c.status IN ('confirmed', 'group_verified') THEN c.amount ELSE 0 END), 0) AS confirmed_total,
-              SUM(CASE WHEN c.status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
-              SUM(CASE WHEN c.status = 'paid' THEN 1 ELSE 0 END) AS paid_count,
-              SUM(CASE WHEN c.status IN ('confirmed', 'group_verified') THEN 1 ELSE 0 END) AS confirmed_count,
-              SUM(CASE WHEN c.status = 'disputed' THEN 1 ELSE 0 END) AS disputed_count,
+              COALESCE(SUM(CASE WHEN c.status = 'pending' THEN 1 ELSE 0 END), 0) AS pending_count,
+              COALESCE(SUM(CASE WHEN c.status = 'paid' THEN 1 ELSE 0 END), 0) AS paid_count,
+              COALESCE(SUM(CASE WHEN c.status IN ('confirmed', 'group_verified') THEN 1 ELSE 0 END), 0) AS confirmed_count,
+              COALESCE(SUM(CASE WHEN c.status = 'disputed' THEN 1 ELSE 0 END), 0) AS disputed_count,
               COUNT(c.id) AS total_count,
-              SUM(CASE WHEN c.status = 'pending' AND cy.due_date < NOW() THEN 1 ELSE 0 END) AS late_candidate_count
+              COALESCE(SUM(CASE WHEN c.status = 'pending' AND cy.due_date < NOW() THEN 1 ELSE 0 END), 0) AS late_candidate_count
             FROM contributions c
             JOIN cycles cy ON cy.id = c.cycle_id
             WHERE c.cycle_id = :cycle_id
@@ -253,7 +269,20 @@ def current_contribution_stats(db: Session, cycle_id: str | None):
         {"cycle_id": cycle_id},
     ).mappings().first()
 
-    return dict(row or {})
+    if not row:
+        return {
+            "expected_total": 0,
+            "paid_total": 0,
+            "confirmed_total": 0,
+            "pending_count": 0,
+            "paid_count": 0,
+            "confirmed_count": 0,
+            "disputed_count": 0,
+            "total_count": 0,
+            "late_candidate_count": 0,
+        }
+
+    return dict(row)
 
 
 @router.get("/groups/{group_id}/operations/command-center")
@@ -267,67 +296,80 @@ def group_command_center(
     cycle = latest_cycle(db, group_id)
     stats = current_contribution_stats(db, cycle["id"] if cycle else None)
 
+    group_member_columns = table_columns(db, "group_members")
+    status_clause = f"AND {active_member_filter('gm')}" if "status" in group_member_columns else ""
+
     member_count = db.execute(
         text(
-            """
+            f"""
             SELECT COUNT(*) AS count
-            FROM group_members
-            WHERE group_id = :group_id
-              AND COALESCE(status, 'active') != 'removed_before_start'
+            FROM group_members gm
+            WHERE gm.group_id = :group_id
+              {status_clause}
             """
         ),
         {"group_id": group_id},
     ).mappings().first()
 
-    pending_agreements = db.execute(
-        text(
-            """
-            SELECT COUNT(*) AS count
-            FROM group_members
-            WHERE group_id = :group_id
-              AND agreement_accepted_at IS NULL
-              AND COALESCE(status, 'active') != 'removed_before_start'
-            """
-        ),
-        {"group_id": group_id},
-    ).mappings().first()
+    pending_agreements_count = 0
+
+    if "agreement_accepted_at" in group_member_columns:
+        pending_agreements = db.execute(
+            text(
+                f"""
+                SELECT COUNT(*) AS count
+                FROM group_members gm
+                WHERE gm.group_id = :group_id
+                  AND gm.agreement_accepted_at IS NULL
+                  {status_clause}
+                """
+            ),
+            {"group_id": group_id},
+        ).mappings().first()
+
+        pending_agreements_count = int(pending_agreements["count"] or 0)
 
     open_disputes = 0
+
     if table_exists(db, "dispute_cases"):
-        open_disputes = int(
-            db.execute(
-                text(
-                    """
-                    SELECT COUNT(*) AS count
-                    FROM dispute_cases
-                    WHERE group_id = :group_id
-                      AND status IN ('open', 'under_review')
-                    """
-                ),
-                {"group_id": group_id},
-            ).mappings().first()["count"]
-            or 0
-        )
+        open_disputes_row = db.execute(
+            text(
+                """
+                SELECT COUNT(*) AS count
+                FROM dispute_cases
+                WHERE group_id = :group_id
+                  AND status IN ('open', 'under_review')
+                """
+            ),
+            {"group_id": group_id},
+        ).mappings().first()
+
+        open_disputes = int(open_disputes_row["count"] or 0)
 
     open_late_cases = 0
+
     if table_exists(db, "late_payment_cases"):
-        open_late_cases = int(
-            db.execute(
-                text(
-                    """
-                    SELECT COUNT(*) AS count
-                    FROM late_payment_cases
-                    WHERE group_id = :group_id
-                      AND status = 'open'
-                    """
-                ),
-                {"group_id": group_id},
-            ).mappings().first()["count"]
-            or 0
-        )
+        open_late_cases_row = db.execute(
+            text(
+                """
+                SELECT COUNT(*) AS count
+                FROM late_payment_cases
+                WHERE group_id = :group_id
+                  AND status = 'open'
+                """
+            ),
+            {"group_id": group_id},
+        ).mappings().first()
+
+        open_late_cases = int(open_late_cases_row["count"] or 0)
 
     unread_messages = 0
-    if table_exists(db, "chat_threads") and table_exists(db, "chat_messages") and table_exists(db, "chat_thread_members"):
+
+    if (
+        table_exists(db, "chat_threads")
+        and table_exists(db, "chat_messages")
+        and table_exists(db, "chat_thread_members")
+    ):
         unread_row = db.execute(
             text(
                 """
@@ -344,10 +386,12 @@ def group_command_center(
             ),
             {"group_id": group_id, "user_id": current_user.id},
         ).mappings().first()
+
         unread_messages = int(unread_row["count"] or 0)
 
     unacknowledged_announcements = 0
-    if table_exists(db, "group_announcements"):
+
+    if table_exists(db, "group_announcements") and table_exists(db, "group_announcement_acknowledgements"):
         ack_row = db.execute(
             text(
                 """
@@ -362,30 +406,35 @@ def group_command_center(
             ),
             {"group_id": group_id, "user_id": current_user.id},
         ).mappings().first()
+
         unacknowledged_announcements = int(ack_row["count"] or 0)
 
     next_action = "Review the group ledger."
 
-    if int(pending_agreements["count"] or 0) > 0:
+    if pending_agreements_count > 0:
         next_action = "Ask members to accept the Circle Commitment."
-    elif stats.get("late_candidate_count", 0):
+    elif int(stats.get("late_candidate_count") or 0) > 0:
         next_action = "Review late payment candidates."
     elif open_disputes > 0:
         next_action = "Resolve open dispute cases."
-    elif stats.get("pending_count", 0):
+    elif int(stats.get("pending_count") or 0) > 0:
         next_action = "Ask pending members to upload proof."
-    elif stats.get("paid_count", 0):
+    elif int(stats.get("paid_count") or 0) > 0:
         next_action = "Confirm uploaded payment proofs."
     elif unacknowledged_announcements > 0:
         next_action = "Read and acknowledge announcements."
-    elif cycle and stats.get("total_count", 0) and stats.get("confirmed_count") == stats.get("total_count"):
+    elif (
+        cycle
+        and int(stats.get("total_count") or 0) > 0
+        and int(stats.get("confirmed_count") or 0) == int(stats.get("total_count") or 0)
+    ):
         next_action = "Cycle looks complete. Prompt member reviews or open continuation vote."
 
     return {
         "group": dict(group),
         "current_cycle": dict(cycle) if cycle else None,
         "member_count": int(member_count["count"] or 0),
-        "pending_agreements": int(pending_agreements["count"] or 0),
+        "pending_agreements": pending_agreements_count,
         "open_disputes": open_disputes,
         "open_late_cases": open_late_cases,
         "unread_messages": unread_messages,
@@ -538,37 +587,12 @@ def member_responsibilities(
     )
 
     member_status_filter = (
-        "AND COALESCE(gm.status, 'active') != 'removed_before_start'"
+        f"AND {active_member_filter('gm')}"
         if "status" in group_member_columns
         else ""
     )
 
-    cycle = db.execute(
-        text(
-            """
-            SELECT
-              cy.id,
-              cy.cycle_number,
-              cy.status,
-              cy.due_date,
-              receiver_user.name AS receiver_name,
-              receiver_user.email AS receiver_email
-            FROM cycles cy
-            LEFT JOIN LATERAL (
-              SELECT c.receiver_user_id
-              FROM contributions c
-              WHERE c.cycle_id = cy.id
-              LIMIT 1
-            ) receiver_lookup ON TRUE
-            LEFT JOIN users receiver_user
-              ON receiver_user.id = receiver_lookup.receiver_user_id
-            WHERE cy.group_id = :group_id
-            ORDER BY cy.cycle_number DESC
-            LIMIT 1
-            """
-        ),
-        {"group_id": group_id},
-    ).mappings().first()
+    cycle = latest_cycle(db, group_id)
 
     members = db.execute(
         text(
@@ -696,17 +720,13 @@ def member_responsibilities(
 
         if contribution:
             due_date = contribution.get("due_date")
-
             is_late_candidate = False
 
             if isinstance(due_date, datetime):
                 if due_date.tzinfo is None:
                     due_date = due_date.replace(tzinfo=timezone.utc)
 
-                is_late_candidate = (
-                    contribution["status"] == "pending"
-                    and due_date < now
-                )
+                is_late_candidate = contribution["status"] == "pending" and due_date < now
 
             item.update(
                 {
@@ -743,6 +763,7 @@ def member_responsibilities(
         "members": member_rows,
     }
 
+
 @router.get("/groups/{group_id}/operations/schedule")
 def payment_schedule(
     group_id: str,
@@ -766,8 +787,8 @@ def payment_schedule(
               COALESCE(SUM(c.amount), 0) AS expected_total,
               COALESCE(SUM(CASE WHEN c.status IN ('paid', 'confirmed', 'group_verified') THEN c.amount ELSE 0 END), 0) AS paid_total,
               COALESCE(SUM(CASE WHEN c.status IN ('confirmed', 'group_verified') THEN c.amount ELSE 0 END), 0) AS confirmed_total,
-              SUM(CASE WHEN c.status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
-              SUM(CASE WHEN c.status = 'disputed' THEN 1 ELSE 0 END) AS disputed_count
+              COALESCE(SUM(CASE WHEN c.status = 'pending' THEN 1 ELSE 0 END), 0) AS pending_count,
+              COALESCE(SUM(CASE WHEN c.status = 'disputed' THEN 1 ELSE 0 END), 0) AS disputed_count
             FROM cycles cy
             LEFT JOIN LATERAL (
               SELECT c2.receiver_user_id
@@ -804,6 +825,9 @@ def list_late_payments(
 ):
     require_group_member(db, group_id, current_user.id)
     group_or_404(db, group_id)
+
+    if not table_exists(db, "late_payment_cases"):
+        return {"candidates": [], "cases": []}
 
     candidates = db.execute(
         text(
@@ -878,6 +902,9 @@ def mark_late_payment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    if not table_exists(db, "late_payment_cases"):
+        raise HTTPException(status_code=400, detail="Late payment tracking is not configured")
+
     row = db.execute(
         text(
             """
@@ -1140,24 +1167,40 @@ def list_announcements(
     require_group_member(db, group_id, current_user.id)
     group_or_404(db, group_id)
 
+    if not table_exists(db, "group_announcements"):
+        return {"announcements": []}
+
+    acknowledgement_join = ""
+    acknowledgement_select = "FALSE AS acknowledged_by_me"
+    acknowledgement_count_select = "0 AS acknowledgement_count"
+
+    if table_exists(db, "group_announcement_acknowledgements"):
+        acknowledgement_join = """
+            LEFT JOIN group_announcement_acknowledgements ack
+              ON ack.announcement_id = ga.id
+             AND ack.user_id = :user_id
+        """
+        acknowledgement_select = "CASE WHEN ack.user_id IS NULL THEN FALSE ELSE TRUE END AS acknowledged_by_me"
+        acknowledgement_count_select = """
+            (
+              SELECT COUNT(*)
+              FROM group_announcement_acknowledgements ack2
+              WHERE ack2.announcement_id = ga.id
+            ) AS acknowledgement_count
+        """
+
     rows = db.execute(
         text(
-            """
+            f"""
             SELECT
               ga.*,
               author.name AS author_name,
               author.email AS author_email,
-              CASE WHEN ack.user_id IS NULL THEN FALSE ELSE TRUE END AS acknowledged_by_me,
-              (
-                SELECT COUNT(*)
-                FROM group_announcement_acknowledgements ack2
-                WHERE ack2.announcement_id = ga.id
-              ) AS acknowledgement_count
+              {acknowledgement_select},
+              {acknowledgement_count_select}
             FROM group_announcements ga
             JOIN users author ON author.id = ga.author_user_id
-            LEFT JOIN group_announcement_acknowledgements ack
-              ON ack.announcement_id = ga.id
-             AND ack.user_id = :user_id
+            {acknowledgement_join}
             WHERE ga.group_id = :group_id
             ORDER BY ga.pinned DESC, ga.created_at DESC
             """
@@ -1178,7 +1221,11 @@ def create_announcement(
     require_group_organizer(db, group_id, current_user.id)
     group_or_404(db, group_id)
 
+    if not table_exists(db, "group_announcements"):
+        raise HTTPException(status_code=400, detail="Announcements are not configured")
+
     priority = payload.priority.strip().lower()
+
     if priority not in {"normal", "important", "urgent"}:
         raise HTTPException(status_code=400, detail="Priority must be normal, important, or urgent")
 
@@ -1242,6 +1289,9 @@ def acknowledge_announcement(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    if not table_exists(db, "group_announcements") or not table_exists(db, "group_announcement_acknowledgements"):
+        raise HTTPException(status_code=400, detail="Announcement acknowledgements are not configured")
+
     announcement = db.execute(
         text(
             """
@@ -1296,7 +1346,7 @@ def get_invite_controls(
         "group_id": group_id,
         "invite_code": group["invite_code"],
         "invite_enabled": group.get("invite_enabled", True),
-        "invite_approval_required": group.get("invite_approval_required", False),
+        "invite_approval_required": group.get("invite_approval_required", True),
         "invite_expires_at": group.get("invite_expires_at"),
         "invite_max_uses": group.get("invite_max_uses"),
         "invite_uses": group.get("invite_uses", 0),
@@ -1315,20 +1365,40 @@ def update_invite_controls(
     require_group_organizer(db, group_id, current_user.id)
     group_or_404(db, group_id)
 
+    group_columns = table_columns(db, "groups")
+
     invite_expires_at = None
+
     if payload.invite_expires_at:
         invite_expires_at = datetime.fromisoformat(payload.invite_expires_at.replace("Z", "+00:00"))
 
+    set_parts = []
+    values: dict[str, Any] = {"group_id": group_id}
+
+    def add(column: str, value: Any):
+        if column in group_columns:
+            set_parts.append(f"{column} = :{column}")
+            values[column] = value
+
+    add("invite_enabled", payload.invite_enabled)
+    add("invite_approval_required", payload.invite_approval_required)
+    add("invite_expires_at", invite_expires_at)
+    add("invite_max_uses", payload.invite_max_uses)
+    add("min_trust_score_to_join", payload.min_trust_score_to_join)
+    add("public_invite_message", payload.public_invite_message)
+
+    if "join_approval_mode" in group_columns:
+        set_parts.append("join_approval_mode = :join_approval_mode")
+        values["join_approval_mode"] = "organizer" if payload.invite_approval_required else "open"
+
+    if not set_parts:
+        return get_invite_controls(group_id, db, current_user)
+
     row = db.execute(
         text(
-            """
+            f"""
             UPDATE groups
-            SET invite_enabled = :invite_enabled,
-                invite_approval_required = :invite_approval_required,
-                invite_expires_at = :invite_expires_at,
-                invite_max_uses = :invite_max_uses,
-                min_trust_score_to_join = :min_trust_score_to_join,
-                public_invite_message = :public_invite_message
+            SET {", ".join(set_parts)}
             WHERE id = :group_id
             RETURNING
               id AS group_id,
@@ -1342,15 +1412,7 @@ def update_invite_controls(
               public_invite_message
             """
         ),
-        {
-            "group_id": group_id,
-            "invite_enabled": payload.invite_enabled,
-            "invite_approval_required": payload.invite_approval_required,
-            "invite_expires_at": invite_expires_at,
-            "invite_max_uses": payload.invite_max_uses,
-            "min_trust_score_to_join": payload.min_trust_score_to_join,
-            "public_invite_message": payload.public_invite_message,
-        },
+        values,
     ).mappings().first()
 
     best_effort_audit_log(
@@ -1374,189 +1436,4 @@ def controlled_join_by_invite(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    group = db.execute(
-        text(
-            """
-            SELECT *
-            FROM groups
-            WHERE UPPER(invite_code) = UPPER(:invite_code)
-            LIMIT 1
-            """
-        ),
-        {"invite_code": invite_code},
-    ).mappings().first()
-
-    if not group:
-        raise HTTPException(status_code=404, detail="Invite not found")
-
-    if not group.get("invite_enabled", True):
-        raise HTTPException(status_code=403, detail="This invite link is currently disabled")
-
-    if group.get("invite_expires_at") and group["invite_expires_at"] < datetime.now(timezone.utc):
-        raise HTTPException(status_code=403, detail="This invite link has expired")
-
-    if group.get("invite_max_uses") is not None and int(group.get("invite_uses") or 0) >= int(group["invite_max_uses"]):
-        raise HTTPException(status_code=403, detail="This invite link has reached its use limit")
-
-    if group.get("status") in {"archived", "closed", "active_locked"}:
-        raise HTTPException(status_code=403, detail="This group is not accepting direct joins")
-
-    existing_member = db.execute(
-        text(
-            """
-            SELECT *
-            FROM group_members
-            WHERE group_id = :group_id
-              AND user_id = :user_id
-              AND COALESCE(status, 'active') != 'removed_before_start'
-            """
-        ),
-        {"group_id": group["id"], "user_id": current_user.id},
-    ).mappings().first()
-
-    if existing_member:
-        return {
-            "status": "already_member",
-            "group": dict(group),
-        }
-
-    member_count = int(
-        db.execute(
-            text(
-                """
-                SELECT COUNT(*) AS count
-                FROM group_members
-                WHERE group_id = :group_id
-                  AND COALESCE(status, 'active') != 'removed_before_start'
-                """
-            ),
-            {"group_id": group["id"]},
-        ).mappings().first()["count"]
-        or 0
-    )
-
-    if member_count >= int(group["member_limit"] or 0):
-        raise HTTPException(status_code=403, detail="This group is already full")
-
-    if int(current_user.trust_score or 0) < int(group.get("min_trust_score_to_join") or 0):
-        raise HTTPException(status_code=403, detail="Your trust score does not meet this group's invite requirement")
-
-    if group.get("invite_approval_required", False):
-        if not table_exists(db, "group_join_requests"):
-            raise HTTPException(status_code=400, detail="Join request table is not available")
-
-        db.execute(
-            text(
-                """
-                INSERT INTO group_join_requests (
-                  id,
-                  group_id,
-                  requester_user_id,
-                  message,
-                  status,
-                  created_at,
-                  updated_at
-                )
-                VALUES (
-                  :id,
-                  :group_id,
-                  :requester_user_id,
-                  :message,
-                  'pending',
-                  NOW(),
-                  NOW()
-                )
-                ON CONFLICT (group_id, requester_user_id)
-                DO UPDATE SET
-                  status = 'pending',
-                  updated_at = NOW()
-                """
-            ),
-            {
-                "id": new_id(),
-                "group_id": group["id"],
-                "requester_user_id": current_user.id,
-                "message": "Requested to join from public invite link.",
-            },
-        )
-
-        db.commit()
-
-        return {
-            "status": "approval_required",
-            "group": dict(group),
-        }
-
-    columns = table_columns(db, "group_members")
-    insert_columns: list[str] = []
-    values: dict[str, Any] = {}
-
-    def add(column: str, value: Any):
-        if column in columns:
-            insert_columns.append(column)
-            values[column] = value
-
-    add("id", new_id())
-    add("group_id", group["id"])
-    add("user_id", current_user.id)
-    add("role", "member")
-
-    member_status = "pending_agreement" if group.get("agreement_required", True) else "active"
-    add("status", member_status)
-    add("agreement_version", group.get("agreement_version", 1))
-    add("has_received_payout", False)
-    add("joined_at", datetime.now(timezone.utc))
-    add("created_at", datetime.now(timezone.utc))
-    add("updated_at", datetime.now(timezone.utc))
-
-    if not {"group_id", "user_id"}.issubset(set(insert_columns)):
-        raise HTTPException(status_code=500, detail="Group member table is missing required columns")
-
-    db.execute(
-        text(
-            f"""
-            INSERT INTO group_members ({", ".join(insert_columns)})
-            VALUES ({", ".join(f":{column}" for column in insert_columns)})
-            """
-        ),
-        values,
-    )
-
-    db.execute(
-        text(
-            """
-            UPDATE groups
-            SET invite_uses = COALESCE(invite_uses, 0) + 1
-            WHERE id = :group_id
-            """
-        ),
-        {"group_id": group["id"]},
-    )
-
-    best_effort_audit_log(
-        db,
-        group["id"],
-        current_user.id,
-        "member_joined_from_controlled_invite",
-        "group",
-        group["id"],
-        {"invite_code": invite_code},
-    )
-
-    db.commit()
-
-    refreshed_group = db.execute(
-        text(
-            """
-            SELECT *
-            FROM groups
-            WHERE id = :group_id
-            """
-        ),
-        {"group_id": group["id"]},
-    ).mappings().first()
-
-    return {
-        "status": "joined",
-        "group": dict(refreshed_group or group),
-    }
+    return join_invite_for_user(invite_code, db, current_user)

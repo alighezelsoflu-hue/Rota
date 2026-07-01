@@ -264,8 +264,9 @@ export const groupOperationsApi = {
   },
 
   joinByInvite(inviteCode: string) {
-    return request<ControlledJoinResponse>(`/group-invites/${inviteCode}/join`, {
+    return request<ControlledJoinResponse>(`/member-admission/invites/${inviteCode}/join`, {
       method: 'POST',
+      body: JSON.stringify({ message: null }),
     })
   },
 }

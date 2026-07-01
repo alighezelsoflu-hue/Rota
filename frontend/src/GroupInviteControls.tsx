@@ -1,18 +1,19 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { ActionBanner, Badge, Button, ButtonLink, Card, Skeleton } from './ui'
-import { groupOperationsApi } from './groupOperationsApi'
-import type { InviteControls } from './groupOperationsApi'
+import { memberAdmissionApi } from './memberAdmissionApi'
+import type { AdmissionSettings, JoinApprovalMode, LeaveApprovalMode } from './memberAdmissionApi'
 
 type Props = {
   groupId: string
   isOrganizer: boolean
 }
 
-const emptyControls: InviteControls = {
+const emptySettings: AdmissionSettings = {
   group_id: '',
   invite_code: '',
   invite_enabled: true,
-  invite_approval_required: false,
+  join_approval_mode: 'organizer',
+  leave_approval_mode: 'organizer',
   invite_expires_at: null,
   invite_max_uses: null,
   invite_uses: 0,
@@ -33,7 +34,7 @@ function fromDatetimeLocal(value: string) {
 }
 
 export default function GroupInviteControls({ groupId, isOrganizer }: Props) {
-  const [controls, setControls] = useState<InviteControls>(emptyControls)
+  const [settings, setSettings] = useState<AdmissionSettings>(emptySettings)
   const [expiresLocal, setExpiresLocal] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -45,8 +46,8 @@ export default function GroupInviteControls({ groupId, isOrganizer }: Props) {
     setError('')
 
     try {
-      const data = await groupOperationsApi.inviteControls(groupId)
-      setControls(data)
+      const data = await memberAdmissionApi.settings(groupId)
+      setSettings(data)
       setExpiresLocal(toDatetimeLocal(data.invite_expires_at))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load invite controls')
@@ -66,15 +67,16 @@ export default function GroupInviteControls({ groupId, isOrganizer }: Props) {
     setError('')
 
     try {
-      const saved = await groupOperationsApi.updateInviteControls(groupId, {
-        ...controls,
+      const saved = await memberAdmissionApi.updateSettings(groupId, {
+        ...settings,
         invite_expires_at: fromDatetimeLocal(expiresLocal),
       })
-      setControls(saved)
+
+      setSettings(saved)
       setExpiresLocal(toDatetimeLocal(saved.invite_expires_at))
-      setMessage('Invite controls saved.')
+      setMessage('Admission controls saved.')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save invite controls')
+      setError(err instanceof Error ? err.message : 'Could not save admission controls')
     } finally {
       setSaving(false)
     }
@@ -82,20 +84,20 @@ export default function GroupInviteControls({ groupId, isOrganizer }: Props) {
 
   if (loading) return <Skeleton variant="card" />
 
-  const publicUrl = `${window.location.origin}/g/${controls.invite_code}`
+  const publicUrl = `${window.location.origin}/g/${settings.invite_code}`
 
   return (
     <Card
       wide
-      eyebrow="Invite controls"
-      title="Manage how members join"
-      description="Control whether the public invite works, whether approval is required, and which trust score is needed."
-      actions={<Badge tone={controls.invite_enabled ? 'success' : 'danger'}>{controls.invite_enabled ? 'Enabled' : 'Disabled'}</Badge>}
+      eyebrow="Admission controls"
+      title="Invite and joining rules"
+      description="Control whether an invite link gives direct access or creates a join request that must be approved."
+      actions={<Badge tone={settings.invite_enabled ? 'success' : 'danger'}>{settings.invite_enabled ? 'Invite enabled' : 'Invite disabled'}</Badge>}
     >
       {error && (
         <ActionBanner
           tone="danger"
-          title="Invite controls unavailable"
+          title="Admission controls unavailable"
           description={error}
           icon="!"
         />
@@ -115,29 +117,55 @@ export default function GroupInviteControls({ groupId, isOrganizer }: Props) {
           <span>Public invite</span>
           <strong>{publicUrl}</strong>
         </div>
-        <ButtonLink to={`/g/${controls.invite_code}`} variant="secondary" size="sm">Preview</ButtonLink>
+        <ButtonLink to={`/g/${settings.invite_code}`} variant="secondary" size="sm">Preview</ButtonLink>
       </div>
 
       <form className="form inviteControlsForm" onSubmit={save}>
         <label className="checkRow">
           <input
             type="checkbox"
-            checked={controls.invite_enabled}
+            checked={settings.invite_enabled}
             disabled={!isOrganizer}
-            onChange={event => setControls(current => ({ ...current, invite_enabled: event.target.checked }))}
+            onChange={event => setSettings(current => ({ ...current, invite_enabled: event.target.checked }))}
           />
-          Enable invite link
+          Enable invite link and invite code
         </label>
 
-        <label className="checkRow">
-          <input
-            type="checkbox"
-            checked={controls.invite_approval_required}
-            disabled={!isOrganizer}
-            onChange={event => setControls(current => ({ ...current, invite_approval_required: event.target.checked }))}
-          />
-          Require organizer approval before joining
-        </label>
+        <div className="settingsGrid two">
+          <label>
+            Join approval mode
+            <select
+              value={settings.join_approval_mode}
+              disabled={!isOrganizer}
+              onChange={event => setSettings(current => ({ ...current, join_approval_mode: event.target.value as JoinApprovalMode }))}
+            >
+              <option value="open">Open invite — join directly</option>
+              <option value="organizer">Organizer approval</option>
+              <option value="all_members">All active members approve</option>
+              <option value="majority">Majority approval</option>
+            </select>
+          </label>
+
+          <label>
+            Leave approval mode
+            <select
+              value={settings.leave_approval_mode}
+              disabled={!isOrganizer}
+              onChange={event => setSettings(current => ({ ...current, leave_approval_mode: event.target.value as LeaveApprovalMode }))}
+            >
+              <option value="organizer">Organizer approval</option>
+              <option value="all_members">All active members approve</option>
+              <option value="majority">Majority approval</option>
+            </select>
+          </label>
+        </div>
+
+        <ActionBanner
+          tone="info"
+          title="Recommended setting"
+          description="For trusted money circles, use Organizer approval or All active members approval. Open invite is best only for low-risk test groups."
+          icon="◎"
+        />
 
         <div className="settingsGrid two">
           <label>
@@ -146,9 +174,9 @@ export default function GroupInviteControls({ groupId, isOrganizer }: Props) {
               type="number"
               min={0}
               max={100}
-              value={controls.min_trust_score_to_join}
+              value={settings.min_trust_score_to_join}
               disabled={!isOrganizer}
-              onChange={event => setControls(current => ({ ...current, min_trust_score_to_join: Number(event.target.value) }))}
+              onChange={event => setSettings(current => ({ ...current, min_trust_score_to_join: Number(event.target.value) }))}
             />
           </label>
 
@@ -157,10 +185,10 @@ export default function GroupInviteControls({ groupId, isOrganizer }: Props) {
             <input
               type="number"
               min={1}
-              value={controls.invite_max_uses || ''}
+              value={settings.invite_max_uses || ''}
               disabled={!isOrganizer}
               placeholder="No limit"
-              onChange={event => setControls(current => ({ ...current, invite_max_uses: event.target.value ? Number(event.target.value) : null }))}
+              onChange={event => setSettings(current => ({ ...current, invite_max_uses: event.target.value ? Number(event.target.value) : null }))}
             />
           </label>
         </div>
@@ -178,21 +206,21 @@ export default function GroupInviteControls({ groupId, isOrganizer }: Props) {
         <label>
           Public invite message
           <textarea
-            value={controls.public_invite_message || ''}
+            value={settings.public_invite_message || ''}
             disabled={!isOrganizer}
             placeholder="Optional message shown to invited people."
-            onChange={event => setControls(current => ({ ...current, public_invite_message: event.target.value }))}
+            onChange={event => setSettings(current => ({ ...current, public_invite_message: event.target.value }))}
           />
         </label>
 
         <div className="inviteUsageLine">
-          <Badge tone="info">Used {controls.invite_uses}</Badge>
-          {controls.invite_max_uses && <Badge tone="warning">Limit {controls.invite_max_uses}</Badge>}
+          <Badge tone="info">Used {settings.invite_uses}</Badge>
+          {settings.invite_max_uses && <Badge tone="warning">Limit {settings.invite_max_uses}</Badge>}
         </div>
 
         {isOrganizer && (
           <Button type="submit" loading={saving}>
-            Save invite controls
+            Save admission controls
           </Button>
         )}
       </form>

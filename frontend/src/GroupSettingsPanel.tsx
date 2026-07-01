@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { Badge, Card } from './ui'
 import GroupRulesPage from './GroupRulesPage'
 import GroupInviteControls from './GroupInviteControls'
+import MemberAdmissionPanel from './MemberAdmissionPanel'
 
 type Props = {
   groupId: string
   isOrganizer: boolean
 }
 
-type Tab = 'rules' | 'invite'
+type Tab = 'rules' | 'invite' | 'admission'
 
 export default function GroupSettingsPanel({ groupId, isOrganizer }: Props) {
   const [tab, setTab] = useState<Tab>('rules')
@@ -18,7 +19,7 @@ export default function GroupSettingsPanel({ groupId, isOrganizer }: Props) {
       wide
       eyebrow="Group settings"
       title="Organization settings"
-      description="Manage operating rules and invite controls from one professional group settings area."
+      description="Manage operating rules, invite controls, member approvals, and leave requests from one professional group settings area."
       actions={<Badge tone={isOrganizer ? 'success' : 'neutral'}>{isOrganizer ? 'Organizer controls' : 'View only'}</Badge>}
     >
       <div className="groupSettingsTabs">
@@ -28,11 +29,15 @@ export default function GroupSettingsPanel({ groupId, isOrganizer }: Props) {
         <button type="button" className={tab === 'invite' ? 'active' : ''} onClick={() => setTab('invite')}>
           Invite controls
         </button>
+        <button type="button" className={tab === 'admission' ? 'active' : ''} onClick={() => setTab('admission')}>
+          Admissions
+        </button>
       </div>
 
       <div className="groupSettingsBody">
         {tab === 'rules' && <GroupRulesPage groupId={groupId} isOrganizer={isOrganizer} />}
         {tab === 'invite' && <GroupInviteControls groupId={groupId} isOrganizer={isOrganizer} />}
+        {tab === 'admission' && <MemberAdmissionPanel groupId={groupId} isOrganizer={isOrganizer} />}
       </div>
     </Card>
   )

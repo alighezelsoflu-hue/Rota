@@ -21,6 +21,7 @@ from .community_growth import router as community_growth_router
 from .admin_safety import router as admin_safety_router
 from .profile_pictures import router as profile_pictures_router
 from .group_operations import router as group_operations_router
+from .member_admission import router as member_admission_router
 from .models import AuditLog, Contribution, Cycle, Dispute, Group, GroupMember, User
 from .schemas import (
     AuditLogOut,
@@ -66,6 +67,7 @@ app.include_router(community_growth_router)
 app.include_router(admin_safety_router)
 app.include_router(profile_pictures_router)
 app.include_router(group_operations_router)
+app.include_router(member_admission_router)
 
 DEFAULT_CIRCLE_AGREEMENT = """Circle Commitment
 
@@ -361,77 +363,25 @@ def list_groups(db: Session = Depends(get_db), current_user: User = Depends(get_
         .order_by(Group.created_at.desc())
     ).all()
 
-
-@app.post("/groups/join", response_model=GroupOut)
+from .member_admission import join_invite_for_user
+@app.post("/groups/join")
 def join_group(
     payload: JoinGroupRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    group = db.scalar(
-        select(Group).where(Group.invite_code == payload.invite_code.strip().upper())
-    )
+    result = join_invite_for_user(payload.invite_code, db, current_user)
 
-    if not group:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Invite code not found")
+    if result["status"] == "approval_required":
+        return {
+            "id": result["group"]["id"],
+            "name": result["group"]["name"],
+            "invite_code": result["group"]["invite_code"],
+            "status": "approval_required",
+            "message": "Join request sent. You will become a member after approval.",
+        }
 
-    if group.status in {"active_locked", "cycle_review", "completed", "archived"}:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            "This group has already started and is locked.",
-        )
-
-    existing = db.scalar(
-        select(GroupMember).where(
-            GroupMember.group_id == group.id,
-            GroupMember.user_id == current_user.id,
-        )
-    )
-
-    if existing:
-        if existing.status == "removed_before_start":
-            existing.status = "pending_agreement"
-            existing.agreement_accepted_at = None
-            existing.agreement_version = None
-            db.commit()
-        return group
-
-    count = len(
-        db.scalars(
-            select(GroupMember).where(
-                GroupMember.group_id == group.id,
-                GroupMember.status != "removed_before_start",
-            )
-        ).all()
-    )
-
-    if count >= group.member_limit:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Group member limit reached")
-
-    db.add(
-        GroupMember(
-            group_id=group.id,
-            user_id=current_user.id,
-            role="member",
-            position=count + 1,
-            status="pending_agreement",
-            agreement_accepted_at=None,
-            agreement_version=None,
-            has_received_payout=False,
-        )
-    )
-
-    log_action(
-        db,
-        "member_joined_pending_agreement",
-        current_user.id,
-        group.id,
-        f"{current_user.name} joined with invite code and must accept agreement",
-    )
-
-    db.commit()
-
-    return group
+    return result["group"]
 
 
 @app.get("/groups/{group_id}", response_model=GroupDetail)

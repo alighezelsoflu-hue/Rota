@@ -8537,3 +8537,148 @@ body[data-theme='dark'],
 :root[data-theme='dark'] .groupSettingsTabs button.active {
   background: rgba(34, 197, 94, 0.14);
 }
+/* -------------------------------------------------------
+   Member admission controls
+------------------------------------------------------- */
+
+.admissionSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.admissionSummaryGrid div,
+.admissionAddMemberForm,
+.leaveRequestBox,
+.admissionRequestCard {
+  border-radius: 22px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.admissionSummaryGrid div {
+  padding: 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.admissionSummaryGrid span {
+  color: var(--ui-muted, #64748b);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.admissionSummaryGrid strong {
+  color: var(--ui-text, #0f172a);
+  text-transform: capitalize;
+}
+
+.admissionAddMemberForm,
+.leaveRequestBox {
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.admissionAddMemberForm h3,
+.admissionRequestSection h3 {
+  margin-top: 0;
+}
+
+.admissionRequestSection {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.admissionRequestList {
+  display: grid;
+  gap: 12px;
+}
+
+.admissionRequestCard {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.admissionRequestTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.admissionRequestTop > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admissionRequestTop small {
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+}
+
+.admissionRequestCard h4 {
+  margin: 0;
+  color: var(--ui-text, #0f172a);
+}
+
+.admissionRequestCard p {
+  margin: 4px 0 0;
+  color: var(--ui-muted-strong, #475569);
+  line-height: 1.5;
+}
+
+.admissionVoteLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--ui-muted, #64748b);
+  font-weight: 850;
+}
+
+.admissionActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.leaveRequestBox textarea {
+  min-height: 96px;
+}
+
+@media (max-width: 900px) {
+  .admissionSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admissionRequestTop {
+    display: grid;
+  }
+}
+
+@media (max-width: 640px) {
+  .admissionSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .admissionActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+:root[data-theme='dark'] .admissionSummaryGrid div,
+:root[data-theme='dark'] .admissionAddMemberForm,
+:root[data-theme='dark'] .leaveRequestBox,
+:root[data-theme='dark'] .admissionRequestCard {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .admissionSummaryGrid strong,
+:root[data-theme='dark'] .admissionRequestCard h4 {
+  color: #f8fafc;
+}
