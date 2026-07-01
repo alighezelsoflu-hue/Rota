@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import type { User } from './api'
 import { platformApi } from './platformApi'
 import ThemeToggle from './ThemeToggle'
 import ProfileAvatar from './ProfileAvatar'
-import ProfilePictureManager from './ProfilePictureManager'
+import { broadcastProfilePictureUpdated, profilePictureApi } from './profilePictureApi'
 
 type Props = {
   user: User
@@ -24,12 +24,30 @@ function MobileBadge({ count, tone = 'danger' }: { count: number; tone?: 'danger
   return <span className={`mobileNavBadge ${tone}`}>{label}</span>
 }
 
+function validateProfileImage(file: File) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    return 'Choose a JPG, PNG, or WebP image.'
+  }
+
+  if (file.size > 3 * 1024 * 1024) {
+    return 'Profile picture must be 3MB or smaller.'
+  }
+
+  return ''
+}
+
 export default function MobileBottomNav({ user, onLogout }: Props) {
   const location = useLocation()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+
   const [moreOpen, setMoreOpen] = useState(false)
   const [actionCount, setActionCount] = useState(0)
   const [highPriorityCount, setHighPriorityCount] = useState(0)
   const [notificationCount, setNotificationCount] = useState(0)
+
+  const [busy, setBusy] = useState('')
+  const [photoError, setPhotoError] = useState('')
+  const [photoMessage, setPhotoMessage] = useState('')
 
   async function loadBadges() {
     try {
@@ -79,6 +97,50 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
       window.removeEventListener('keydown', onKeyDown)
     }
   }, [moreOpen])
+
+  async function uploadPhoto(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setPhotoError('')
+    setPhotoMessage('')
+
+    const validationError = validateProfileImage(file)
+    if (validationError) {
+      setPhotoError(validationError)
+      event.target.value = ''
+      return
+    }
+
+    setBusy('upload')
+
+    try {
+      await profilePictureApi.upload(file)
+      broadcastProfilePictureUpdated()
+      setPhotoMessage('Photo updated.')
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'Could not upload photo')
+    } finally {
+      setBusy('')
+      event.target.value = ''
+    }
+  }
+
+  async function removePhoto() {
+    setPhotoError('')
+    setPhotoMessage('')
+    setBusy('remove')
+
+    try {
+      await profilePictureApi.remove()
+      broadcastProfilePictureUpdated()
+      setPhotoMessage('Photo removed.')
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'Could not remove photo')
+    } finally {
+      setBusy('')
+    }
+  }
 
   const actionBadgeTone = highPriorityCount > 0 ? 'danger' : 'warning'
   const moreIsActive = [
@@ -151,17 +213,62 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
           <aside id="mobile-more-menu" className="mobileMoreSheet" aria-label="More navigation">
             <div className="mobileMoreHandle" />
 
-            <div className="mobileMoreHeader">
-              <ProfileAvatar user={user} size="lg" />
+            <input
+              ref={fileInputRef}
+              className="srOnlyFileInput"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={uploadPhoto}
+            />
+
+            <div
+              className="mobileMoreHeader mobilePhotoHeader"
+              role="button"
+              tabIndex={0}
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  fileInputRef.current?.click()
+                }
+              }}
+              aria-label="Change profile picture"
+            >
+              <div className="profilePhotoAvatarWrap">
+                <ProfileAvatar user={user} size="lg" />
+                <span className="profilePhotoCamera">✎</span>
+              </div>
 
               <div className="mobileMoreUser">
                 <strong>{user.name}</strong>
                 <small>{user.email}</small>
                 <span>Trust {user.trust_score}</span>
+
+                <div className="profilePhotoInlineActions" onClick={event => event.stopPropagation()}>
+                  <button
+                    type="button"
+                    disabled={busy === 'upload'}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {busy === 'upload' ? 'Uploading...' : 'Change photo'}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={busy === 'remove'}
+                    onClick={removePhoto}
+                  >
+                    {busy === 'remove' ? 'Removing...' : 'Remove'}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <ProfilePictureManager user={user} compact />
+            {(photoError || photoMessage) && (
+              <div className={photoError ? 'profilePhotoFeedback error' : 'profilePhotoFeedback success'}>
+                {photoError || photoMessage}
+              </div>
+            )}
 
             <div className="mobileMoreTheme">
               <div>
