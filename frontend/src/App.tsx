@@ -36,6 +36,7 @@ import TodayPreview from './TodayPreview'
 import OnboardingPage from './OnboardingPage'
 import PublicInvitePage from './PublicInvitePage'
 import AdminSafetyDashboard from './AdminSafetyDashboard'
+import GuestMobileAuthBar from './GuestMobileAuthBar'
 import { groupOperationsApi } from './groupOperationsApi'
 import CompactGroupHeader from './CompactGroupHeader'
 import GroupWorkspaceTabs from './GroupWorkspaceTabs'
@@ -85,7 +86,7 @@ function Shell({
   children: React.ReactNode
 }) {
   return (
-    <div className="appShell">
+    <div className={user ? 'appShell' : 'appShell guestShell'}>
       <NetworkBackground />
 
       <header className="topbar">
@@ -123,6 +124,7 @@ function Shell({
       <main className="container">{children}</main>
 
       {user && <MobileBottomNav user={user} onLogout={onLogout} />}
+      {!user && <GuestMobileAuthBar />}
     </div>
   )
 }
