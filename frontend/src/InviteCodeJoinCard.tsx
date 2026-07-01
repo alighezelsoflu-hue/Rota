@@ -1,5 +1,5 @@
 import { FormEvent, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { ActionBanner, Button, ButtonLink, Card } from './ui'
 import { groupOperationsApi } from './groupOperationsApi'
 
@@ -74,9 +74,9 @@ export default function InviteCodeJoinCard() {
   }
 
   return (
-    <Card className="inviteJoinCard" eyebrow="Join a circle" title="Have an invite?">
+    <Card className="inviteJoinCard dashboardJoinSection" wide eyebrow="Join a Circle" title="Use an invite code or link">
       <p className="inviteJoinLead">
-        Enter an invite code or paste a Rota invite link. Some groups approve new members before you can join.
+        Paste a Rota invite link or enter the code shared by a group organizer. Some circles require approval before you become a member.
       </p>
 
       {error && (
@@ -103,7 +103,7 @@ export default function InviteCodeJoinCard() {
           <input
             value={inviteInput}
             onChange={event => setInviteInput(event.target.value)}
-            placeholder="Example: ABC123 or rota.app/g/ABC123"
+            placeholder="Example: ABC123 or /g/ABC123"
             autoCapitalize="characters"
             autoCorrect="off"
             spellCheck={false}
@@ -125,7 +125,7 @@ export default function InviteCodeJoinCard() {
       <div className="inviteJoinHelper">
         <span>What happens next?</span>
         <p>
-          If the circle is open, you join immediately. If approval is required, your request goes to the organizer or members.
+          Open groups let you join immediately. Approval-based groups send your request to the organizer or members first.
         </p>
       </div>
 
@@ -134,10 +134,6 @@ export default function InviteCodeJoinCard() {
           Preview invite page
         </ButtonLink>
       )}
-
-      <p className="inviteJoinSmall">
-        Want to start your own circle? <Link to="/groups/new">Create a group</Link>
-      </p>
     </Card>
   )
 }

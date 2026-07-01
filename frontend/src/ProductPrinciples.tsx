@@ -10,11 +10,11 @@ export default function ProductPrinciples({ compact = false }: Props) {
       <article className="principleCard interestFree">
         <span className="principleIcon">0%</span>
         <div>
-          <p className="eyebrow">Bank-interest alternative</p>
-          <h3>Instead of paying bank interest, use trusted 0% interest circles.</h3>
+          <p className="eyebrow">0% interest circles</p>
+          <h3>Build a trusted alternative to paying bank interest.</h3>
           <p>
-            Rota helps members coordinate direct contributions and take turns receiving a lump sum.
-            Your group charges no interest, and Rota does not hold or lend money.
+            Members contribute directly, take turns receiving the lump sum, and keep the group interest-free.
+            Rota coordinates records, not money.
           </p>
         </div>
       </article>
@@ -23,10 +23,10 @@ export default function ProductPrinciples({ compact = false }: Props) {
         <span className="principleIcon">◎</span>
         <div>
           <p className="eyebrow">Trusted groups</p>
-          <h3>Join one or more groups with people you trust.</h3>
+          <h3>Join one or more circles with people you trust.</h3>
           <p>
-            Build circles with family, friends, colleagues, and community members.
-            Trust, responsibility, and clear records make every circle stronger.
+            Create circles with family, friends, colleagues, and community members.
+            Clear agreements and payment records help everyone stay responsible.
           </p>
         </div>
       </article>
@@ -35,10 +35,9 @@ export default function ProductPrinciples({ compact = false }: Props) {
         <span className="principleIcon">↗</span>
         <div>
           <p className="eyebrow">Community strength</p>
-          <h3>The stronger your trusted network, the more useful Rota becomes.</h3>
+          <h3>Trust grows stronger when members stay accountable.</h3>
           <p>
-            More trusted circles mean better visibility, stronger social proof,
-            member reviews, and more opportunities to join reliable groups.
+            Reviews, confirmations, audit logs, and shared history help responsible members build a stronger network.
           </p>
           {!compact && <Link className="inlineLink" to="/network">Explore your Trust Network Map →</Link>}
         </div>

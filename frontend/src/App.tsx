@@ -38,7 +38,6 @@ import PublicInvitePage from './PublicInvitePage'
 import AdminSafetyDashboard from './AdminSafetyDashboard'
 import GuestMobileAuthBar from './GuestMobileAuthBar'
 import InviteCodeJoinCard from './InviteCodeJoinCard'
-import DashboardQuickActions from './DashboardQuickActions'
 import CompactGroupHeader from './CompactGroupHeader'
 import GroupWorkspaceTabs from './GroupWorkspaceTabs'
 import type { GroupWorkspaceTabId } from './GroupWorkspaceTabs'
@@ -163,12 +162,12 @@ function Landing() {
           <div className="businessHeroMessage">
             <div>
               <strong>0% group interest</strong>
-              <span>Members support each other directly — not through bank-interest debt.</span>
+              <span>Members support each other directly without bank-interest debt.</span>
             </div>
 
             <div>
               <strong>Trust-based network</strong>
-              <span>Build reliable circles with family, friends, colleagues, and community members.</span>
+              <span>Build reliable circles with people you already know or carefully approve.</span>
             </div>
 
             <div>
@@ -453,8 +452,7 @@ function GroupListSection({
       wide
       eyebrow="My Groups"
       title="Your circles"
-      description="These are the groups you belong to. Open a group to see its workspace, payments, members, messages, and settings."
-      actions={<ButtonLink to="/groups/new" variant="secondary" size="sm">Create group</ButtonLink>}
+      description="Open a group to see its payments, members, messages, reviews, and settings."
     >
       {loading ? (
         <Skeleton variant="card" />
@@ -462,8 +460,7 @@ function GroupListSection({
         <EmptyState
           icon="◎"
           title="You are not in any group yet"
-          description="Create your first circle or use an invite code to request access to an existing one."
-          action={<ButtonLink to="/groups/new">Create your first group</ButtonLink>}
+          description="Create your first circle from the top button, or use an invite code below to request access."
         />
       ) : (
         <div className="professionalGroupList">
@@ -557,7 +554,7 @@ function Dashboard({ user }: { user: User }) {
         className="wide compactDashboardHeader"
         eyebrow="My Groups"
         title={`Welcome, ${user.name}`}
-        description="Open your circles first. Join or create new circles when you are ready."
+        description="Open your groups first. Join or create a new circle only when you are ready."
         meta={
           <>
             <Badge status={user.verification_status} dot />
@@ -586,18 +583,17 @@ function Dashboard({ user }: { user: User }) {
         <ActionBanner
           className="wide"
           tone="warning"
-          title="Some circles need attention"
+          title="Some groups need attention"
           description={`${reviewGroups.length} group${reviewGroups.length === 1 ? '' : 's'} are forming, pending, or in cycle review.`}
           action={<ButtonLink to="/actions" variant="secondary" size="sm">Review actions</ButtonLink>}
           icon="!"
         />
       )}
 
-      <section className="dashboardPriorityLayout">
+      <section className="dashboardPriorityLayout cleanDashboardLayout">
         <div className="dashboardPrimaryStack">
           <GroupListSection groups={groups} loading={loadingGroups} />
           <InviteCodeJoinCard />
-          <DashboardQuickActions />
         </div>
 
         <aside className="dashboardContextStack">
@@ -611,8 +607,6 @@ function Dashboard({ user }: { user: User }) {
               <StatCard label="Held by Rota" value="€0" icon="0%" tone="neutral" />
             </div>
           </Card>
-
-          <ProductPrinciples compact />
         </aside>
       </section>
     </div>
