@@ -4165,3 +4165,403 @@ td a { color: #1d4ed8; font-weight: 800; }
   border-color: rgba(251, 146, 60, 0.25);
   color: #fdba74;
 }
+
+/* -------------------------------------------------------
+   Mobile web polish
+------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+.button,
+.ghost,
+.navButton {
+  min-height: 44px;
+}
+
+@media (max-width: 900px) {
+  .container,
+  .discoverPage,
+  .messagesPage,
+  .reviewsPage {
+    width: min(100%, calc(100% - 20px));
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 10px;
+    backdrop-filter: blur(16px);
+  }
+
+  .topbar .brand {
+    flex-shrink: 0;
+  }
+
+  .topbar nav {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 0 6px;
+    scrollbar-width: none;
+  }
+
+  .topbar nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .topbar nav a,
+  .topbar nav button,
+  .topbar nav .trust,
+  .themeToggle {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-height: 40px;
+    border-radius: 999px;
+    padding: 9px 12px;
+  }
+
+  .rotaLogoText small {
+    display: none;
+  }
+
+  .heroShell,
+  .dashboardLayout,
+  .createLayout,
+  .grid.two,
+  .featureGrid.three,
+  .discoverGrid,
+  .discoverListGrid,
+  .messagesLayout,
+  .reviewGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .heroShell,
+  .dashboardLayout,
+  .createLayout {
+    gap: 14px;
+  }
+
+  .heroCopy,
+  .heroDemo,
+  .card,
+  .discoverHero,
+  .reviewsHero,
+  .messagesHero,
+  .discoverPanel,
+  .discoverMapPanel,
+  .messageSidebar,
+  .messageWindow,
+  .chatPanel {
+    border-radius: 24px;
+    padding: 20px;
+  }
+
+  .heroCopy h1,
+  .landing h1,
+  .authCard h1,
+  .groupHero h1,
+  .dashboardHero h1,
+  .discoverHero h1,
+  .reviewsHero h1,
+  .messagesHero h1 {
+    font-size: clamp(2rem, 10vw, 3rem);
+    line-height: 1.02;
+  }
+
+  .heroCopy .lead,
+  .discoverHero p,
+  .reviewsHero p,
+  .messagesHero p,
+  .mutedText {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .actions,
+  .actions.noMargin,
+  .actions.centered {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .actions .button,
+  .actions .ghost,
+  .button.full {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .statsGrid,
+  .governanceStats,
+  .trustGrid,
+  .discoverFacts,
+  .reviewStatsGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .panelHeader,
+  .discoverHero,
+  .reviewsHero,
+  .requestRow,
+  .messageWindowHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .groupCards,
+  .discoverCards,
+  .memberList,
+  .sideStack {
+    gap: 12px;
+  }
+
+  .groupCard,
+  .discoverCard,
+  .memberRow,
+  .requestRow {
+    border-radius: 20px;
+  }
+
+  .memberRow {
+    align-items: flex-start;
+  }
+
+  .memberRowActions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+
+  .tableWrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tableWrap table {
+    min-width: 720px;
+  }
+
+  .form label {
+    gap: 8px;
+  }
+
+  .form input,
+  .form select,
+  .form textarea,
+  .chatComposer input {
+    min-height: 48px;
+    border-radius: 16px;
+  }
+
+  .authLayout {
+    min-height: auto;
+    padding: 18px 0 40px;
+  }
+
+  .authCard {
+    width: 100%;
+  }
+
+  .worldMapMock {
+    min-height: 300px;
+    border-radius: 22px;
+  }
+
+  .messagesLayout {
+    margin-top: 14px;
+  }
+
+  .messageSidebar {
+    max-height: none;
+  }
+
+  .messageWindow {
+    min-height: 560px;
+  }
+
+  .chatMessages {
+    max-height: 360px;
+  }
+
+  .chatMessages.large {
+    min-height: 360px;
+  }
+
+  .chatBubble {
+    max-width: 92%;
+    border-radius: 18px;
+  }
+
+  .chatBubble div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .chatComposer {
+    grid-template-columns: 1fr;
+  }
+
+  .chatComposer .button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .container,
+  .discoverPage,
+  .messagesPage,
+  .reviewsPage {
+    width: min(100%, calc(100% - 14px));
+  }
+
+  .topbar {
+    padding: 10px 7px;
+  }
+
+  .rotaLogo {
+    transform: scale(0.92);
+    transform-origin: left center;
+  }
+
+  .heroCopy,
+  .heroDemo,
+  .card,
+  .discoverHero,
+  .reviewsHero,
+  .messagesHero,
+  .discoverPanel,
+  .discoverMapPanel,
+  .messageSidebar,
+  .messageWindow,
+  .chatPanel {
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .heroShell {
+    padding-top: 10px;
+  }
+
+  .heroCopy h1,
+  .landing h1,
+  .authCard h1,
+  .groupHero h1,
+  .dashboardHero h1,
+  .discoverHero h1,
+  .reviewsHero h1,
+  .messagesHero h1 {
+    font-size: clamp(1.8rem, 12vw, 2.55rem);
+  }
+
+  h2 {
+    font-size: 1.35rem;
+  }
+
+  .moneyLine {
+    grid-template-columns: 1fr;
+  }
+
+  .flowCards {
+    grid-template-columns: 1fr;
+  }
+
+  .safeNote,
+  .notice,
+  .chatSafetyNote {
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  .groupHero {
+    display: grid;
+    gap: 14px;
+  }
+
+  .receiverBox {
+    border-radius: 18px;
+  }
+
+  .reviewSummaryCard {
+    border-radius: 22px;
+    padding: 18px;
+  }
+
+  .discoverHeroBadge,
+  .reviewsHeroScore {
+    min-width: 0;
+    width: 100%;
+    border-radius: 22px;
+  }
+
+  .discoverCardTop {
+    align-items: flex-start;
+  }
+
+  .discoverAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
+
+  .threadButton,
+  .connectionChatButton {
+    border-radius: 16px;
+  }
+
+  .chatMessages {
+    padding: 12px;
+  }
+
+  .chatBubble {
+    max-width: 96%;
+    padding: 12px;
+  }
+
+  .button,
+  .ghost,
+  .navButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .topbar nav .button,
+  .topbar nav .ghost,
+  .topbar nav .navButton,
+  .topbar nav a,
+  .topbar nav button,
+  .topbar nav .trust,
+  .themeToggle {
+    width: auto;
+  }
+}
