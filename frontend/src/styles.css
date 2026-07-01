@@ -5555,3 +5555,362 @@ textarea:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+/* -------------------------------------------------------
+   Professional simulator dashboard
+------------------------------------------------------- */
+
+.professionalSimulator {
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 72px;
+  display: grid;
+  gap: 20px;
+}
+
+.simulatorLayoutPro {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.simulatorControlsPro {
+  display: grid;
+  gap: 14px;
+}
+
+.simulatorControlsPro label,
+.memberOrderRow label {
+  display: grid;
+  gap: 8px;
+  color: var(--ui-muted-strong, #475569);
+  font-weight: 900;
+}
+
+.simulatorControlsPro input,
+.simulatorControlsPro select,
+.memberOrderRow input {
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid var(--ui-border-strong, rgba(15, 23, 42, 0.14));
+  padding: 0 14px;
+  font: inherit;
+  background: var(--ui-surface, #ffffff);
+  color: var(--ui-text, #0f172a);
+}
+
+.simulatorControlsPro input:focus,
+.simulatorControlsPro select:focus,
+.memberOrderRow input:focus {
+  outline: none;
+  border-color: var(--ui-primary, #16a34a);
+  box-shadow: var(--ui-focus, 0 0 0 4px rgba(34, 197, 94, 0.16));
+}
+
+.simulatorControlFooter {
+  margin-top: 18px;
+}
+
+.simulatorSummary {
+  display: grid;
+  gap: 16px;
+}
+
+.simulatorStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.memberOrderGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.memberOrderRow {
+  border-radius: 22px;
+  padding: 12px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.memberOrderActions {
+  display: flex;
+  gap: 6px;
+}
+
+.payoutTimeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.payoutCycleCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 26px;
+  padding: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.10), transparent 34%),
+    var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.payoutCycleCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(180deg, #22c55e, #2563eb);
+}
+
+.payoutCycleTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.payoutCycleTop span:last-child {
+  color: var(--ui-muted, #64748b);
+  font-weight: 850;
+  font-size: 0.88rem;
+}
+
+.payoutReceiver,
+.payoutPot {
+  display: grid;
+  gap: 4px;
+  margin-top: 18px;
+}
+
+.payoutReceiver span,
+.payoutPot span,
+.payoutPot small {
+  color: var(--ui-muted, #64748b);
+  font-weight: 850;
+}
+
+.payoutReceiver strong {
+  color: var(--ui-text, #0f172a);
+  font-size: 1.25rem;
+}
+
+.payoutPot strong {
+  color: var(--ui-text, #0f172a);
+  font-size: 1.6rem;
+  letter-spacing: -0.04em;
+}
+
+.netChartWrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.92));
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.netPositionChart {
+  width: 100%;
+  min-width: 760px;
+  height: auto;
+  display: block;
+}
+
+.netAxis,
+.netGridLine {
+  stroke: rgba(100, 116, 139, 0.28);
+  stroke-width: 1;
+}
+
+.netAxis.vertical {
+  stroke: rgba(15, 23, 42, 0.24);
+}
+
+.netGridLine {
+  stroke-dasharray: 4 8;
+}
+
+.netAxisLabel,
+.netZeroLabel,
+.netCycleLabel {
+  fill: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.netCycleLabel {
+  text-anchor: middle;
+}
+
+.netSeries path {
+  fill: none;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.netSeries circle {
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.netSeries-0 path,
+.netSeries-0 circle,
+.netLegend-0 i { stroke: #16a34a; background: #16a34a; fill: #16a34a; }
+
+.netSeries-1 path,
+.netSeries-1 circle,
+.netLegend-1 i { stroke: #2563eb; background: #2563eb; fill: #2563eb; }
+
+.netSeries-2 path,
+.netSeries-2 circle,
+.netLegend-2 i { stroke: #7c3aed; background: #7c3aed; fill: #7c3aed; }
+
+.netSeries-3 path,
+.netSeries-3 circle,
+.netLegend-3 i { stroke: #f97316; background: #f97316; fill: #f97316; }
+
+.netSeries-4 path,
+.netSeries-4 circle,
+.netLegend-4 i { stroke: #0891b2; background: #0891b2; fill: #0891b2; }
+
+.netSeries-5 path,
+.netSeries-5 circle,
+.netLegend-5 i { stroke: #be123c; background: #be123c; fill: #be123c; }
+
+.netSeries-6 path,
+.netSeries-6 circle,
+.netLegend-6 i { stroke: #4f46e5; background: #4f46e5; fill: #4f46e5; }
+
+.netSeries-7 path,
+.netSeries-7 circle,
+.netLegend-7 i { stroke: #65a30d; background: #65a30d; fill: #65a30d; }
+
+.netSeries-8 path,
+.netSeries-8 circle,
+.netLegend-8 i { stroke: #0f766e; background: #0f766e; fill: #0f766e; }
+
+.netSeries-9 path,
+.netSeries-9 circle,
+.netLegend-9 i { stroke: #9333ea; background: #9333ea; fill: #9333ea; }
+
+.netLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.netLegendItem {
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.netLegendItem i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.netLegendItem span {
+  color: var(--ui-text, #0f172a);
+  font-weight: 900;
+}
+
+.netLegendItem small {
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+}
+
+.simulatorTableWrap table {
+  min-width: 980px;
+}
+
+.simulatorCashflowTable td:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.simulatorCashflowTable td:first-child strong {
+  color: var(--ui-text, #0f172a);
+}
+
+.simulatorCashflowTable td:first-child small {
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+}
+
+@media (max-width: 980px) {
+  .professionalSimulator {
+    width: min(100%, calc(100% - 20px));
+  }
+
+  .simulatorLayoutPro,
+  .simulatorStatsGrid,
+  .memberOrderGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .memberOrderRow {
+    grid-template-columns: auto 1fr;
+  }
+
+  .memberOrderActions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payoutTimeline {
+    grid-template-columns: 1fr;
+  }
+}
+
+:root[data-theme='dark'] .simulatorControlsPro input,
+:root[data-theme='dark'] .simulatorControlsPro select,
+:root[data-theme='dark'] .memberOrderRow input,
+:root[data-theme='dark'] .memberOrderRow,
+:root[data-theme='dark'] .payoutCycleCard,
+:root[data-theme='dark'] .netChartWrap,
+:root[data-theme='dark'] .netLegendItem {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .netChartWrap {
+  background: #020617;
+}
+
+:root[data-theme='dark'] .netAxis,
+:root[data-theme='dark'] .netGridLine {
+  stroke: rgba(148, 163, 184, 0.24);
+}
+
+:root[data-theme='dark'] .netAxisLabel,
+:root[data-theme='dark'] .netZeroLabel,
+:root[data-theme='dark'] .netCycleLabel,
+:root[data-theme='dark'] .netLegendItem small {
+  fill: #94a3b8;
+  color: #94a3b8;
+}
+
+:root[data-theme='dark'] .payoutReceiver strong,
+:root[data-theme='dark'] .payoutPot strong,
+:root[data-theme='dark'] .netLegendItem span,
+:root[data-theme='dark'] .simulatorCashflowTable td:first-child strong {
+  color: #f8fafc;
+}
