@@ -3,6 +3,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import type { User } from './api'
 import { platformApi } from './platformApi'
 import ThemeToggle from './ThemeToggle'
+import ProfileAvatar from './ProfileAvatar'
+import ProfilePictureManager from './ProfilePictureManager'
 
 type Props = {
   user: User
@@ -13,16 +15,6 @@ function formatCount(count: number) {
   if (count <= 0) return ''
   if (count > 99) return '99+'
   return String(count)
-}
-
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map(part => part.trim()[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() || 'U'
 }
 
 function MobileBadge({ count, tone = 'danger' }: { count: number; tone?: 'danger' | 'warning' | 'success' }) {
@@ -160,7 +152,7 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
             <div className="mobileMoreHandle" />
 
             <div className="mobileMoreHeader">
-              <span className="mobileMoreAvatar">{initials(user.name)}</span>
+              <ProfileAvatar user={user} size="lg" />
 
               <div className="mobileMoreUser">
                 <strong>{user.name}</strong>
@@ -168,6 +160,8 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
                 <span>Trust {user.trust_score}</span>
               </div>
             </div>
+
+            <ProfilePictureManager user={user} compact />
 
             <div className="mobileMoreTheme">
               <div>

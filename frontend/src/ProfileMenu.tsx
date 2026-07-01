@@ -3,20 +3,12 @@ import { Link } from 'react-router-dom'
 import type { User } from './api'
 import { Badge } from './ui'
 import ThemeToggle from './ThemeToggle'
+import ProfileAvatar from './ProfileAvatar'
+import ProfilePictureManager from './ProfilePictureManager'
 
 type Props = {
   user: User
   onLogout: () => void
-}
-
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map(part => part.trim()[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() || 'U'
 }
 
 export default function ProfileMenu({ user, onLogout }: Props) {
@@ -53,7 +45,7 @@ export default function ProfileMenu({ user, onLogout }: Props) {
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <span className="profileAvatar">{initials(user.name)}</span>
+        <ProfileAvatar user={user} size="sm" />
         <span className="profileMenuText">
           <strong>{user.name.split(' ')[0]}</strong>
           <small>Trust {user.trust_score}</small>
@@ -64,7 +56,7 @@ export default function ProfileMenu({ user, onLogout }: Props) {
       {open && (
         <div className="profileDropdown" role="menu">
           <div className="profileDropdownHeader">
-            <span className="profileAvatar large">{initials(user.name)}</span>
+            <ProfileAvatar user={user} size="lg" />
             <div>
               <strong>{user.name}</strong>
               <span>{user.email}</span>
@@ -73,6 +65,8 @@ export default function ProfileMenu({ user, onLogout }: Props) {
               </div>
             </div>
           </div>
+
+          <ProfilePictureManager user={user} compact />
 
           <div className="profileThemeRow">
             <div>

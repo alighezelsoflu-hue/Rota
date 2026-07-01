@@ -6,6 +6,7 @@ from typing import Iterable
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from .database import settings
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from .chat import router as chat_router
@@ -18,6 +19,7 @@ from .platform import router as platform_router
 from .exports_disputes import router as exports_disputes_router
 from .community_growth import router as community_growth_router
 from .admin_safety import router as admin_safety_router
+from .profile_pictures import router as profile_pictures_router
 from .models import AuditLog, Contribution, Cycle, Dispute, Group, GroupMember, User
 from .schemas import (
     AuditLogOut,
@@ -61,6 +63,7 @@ app.include_router(platform_router)
 app.include_router(exports_disputes_router)
 app.include_router(community_growth_router)
 app.include_router(admin_safety_router)
+app.include_router(profile_pictures_router)
 
 DEFAULT_CIRCLE_AGREEMENT = """Circle Commitment
 

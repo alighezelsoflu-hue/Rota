@@ -7927,3 +7927,129 @@ body[data-theme='dark'],
   border-color: rgba(248, 113, 113, 0.3);
   color: #fecaca;
 }
+/* -------------------------------------------------------
+   Profile pictures
+------------------------------------------------------- */
+
+.profilePictureAvatar {
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--ui-primary, #16a34a), #2563eb);
+  color: white;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.profilePictureAvatar.sm {
+  width: 34px;
+  height: 34px;
+  font-size: 0.78rem;
+}
+
+.profilePictureAvatar.md {
+  width: 42px;
+  height: 42px;
+  font-size: 0.9rem;
+}
+
+.profilePictureAvatar.lg {
+  width: 54px;
+  height: 54px;
+  font-size: 1rem;
+}
+
+.profilePictureAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profilePictureAvatar span {
+  display: grid;
+  place-items: center;
+}
+
+.profilePictureManager {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 22px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.profilePictureManager.compact {
+  padding: 10px;
+  gap: 10px;
+}
+
+.profilePictureManagerRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.profilePictureManagerRow strong,
+.profilePictureManagerRow span {
+  display: block;
+}
+
+.profilePictureManagerRow strong {
+  color: var(--ui-text, #0f172a);
+  font-size: 0.95rem;
+}
+
+.profilePictureManagerRow span {
+  color: var(--ui-muted, #64748b);
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.profilePictureActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.srOnlyFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.profileMenuButton .profilePictureAvatar {
+  margin-left: 0;
+}
+
+.mobileMoreHeader .profilePictureAvatar {
+  width: 54px;
+  height: 54px;
+}
+
+@media (max-width: 760px) {
+  .profilePictureActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .profilePictureActions button {
+    width: 100%;
+  }
+}
+
+:root[data-theme='dark'] .profilePictureManager {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .profilePictureManagerRow strong {
+  color: #f8fafc;
+}
