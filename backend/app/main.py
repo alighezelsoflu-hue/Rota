@@ -14,6 +14,7 @@ from .auth import create_access_token, get_current_user, hash_password, verify_p
 from .database import Base, engine, get_db, settings
 from .governance import router as governance_router
 from .discovery import router as discovery_router
+from .platform import router as platform_router
 from .models import AuditLog, Contribution, Cycle, Dispute, Group, GroupMember, User
 from .schemas import (
     AuditLogOut,

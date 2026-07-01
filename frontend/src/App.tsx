@@ -21,6 +21,11 @@ import ReviewsPage from './ReviewsPage'
 import MemberReviewPanel from './MemberReviewPanel'
 import MessagesPage from './MessagesPage'
 import GroupChatPanel from './GroupChatPanel'
+import ActionCenterPage from './ActionCenterPage'
+import SettingsPage from './SettingsPage'
+import TrustPassportPage from './TrustPassportPage'
+import NotificationsBell from './NotificationsBell'
+import GroupHealthPanel from './GroupHealthPanel'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -72,11 +77,14 @@ function Shell({
           {user ? (
             <>
               <Link to="/dashboard">Dashboard</Link>
+              <Link to="/actions">Actions</Link>
               <Link to="/network">Trust Network</Link>
               <Link to="/discover">Discover</Link>
               <Link to="/messages">Messages</Link>
               <Link to="/simulator">Simulator</Link>
               <Link to="/groups/new">Create group</Link>
+              <NotificationsBell />
+              <Link to="/settings">Settings</Link>
               <span className="trust">Trust {user.trust_score}</span>
               <ThemeToggle />
               <button className="ghost" onClick={onLogout}>Logout</button>
@@ -687,6 +695,8 @@ function GroupPage({ user }: { user: User }) {
         <div className="statCard"><span>Pending rows</span><strong>{pendingCount}</strong></div>
       </section>
 
+      <GroupHealthPanel groupId={detail.group.id} />
+
       <GroupGovernancePanel
         groupId={detail.group.id}
         isOrganizer={isOrganizer}
@@ -1065,6 +1075,42 @@ export default function App() {
           element={
             <RequireAuth user={auth.user} loading={auth.loading}>
               <MessagesPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/actions"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <ActionCenterPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <SettingsPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/trust-passport"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <TrustPassportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/trust-passport/:userId"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <TrustPassportPage />
             </RequireAuth>
           }
         />
