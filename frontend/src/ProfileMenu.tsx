@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { User } from './api'
 import { Badge } from './ui'
+import ThemeToggle from './ThemeToggle'
 
 type Props = {
   user: User
@@ -71,6 +72,14 @@ export default function ProfileMenu({ user, onLogout }: Props) {
                 <Badge tone="success">Trust {user.trust_score}</Badge>
               </div>
             </div>
+          </div>
+
+          <div className="profileThemeRow">
+            <div>
+              <strong>Appearance</strong>
+              <span>Light / dark mode</span>
+            </div>
+            <ThemeToggle />
           </div>
 
           <Link to="/trust-passport" onClick={() => setOpen(false)}>Trust Passport</Link>

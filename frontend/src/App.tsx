@@ -104,6 +104,7 @@ function Shell({
               <Link to="/messages">Messages</Link>
               <Link to="/network">Trust Network</Link>
               <Link to="/groups/new">Create group</Link>
+              <ThemeToggle />
               <NotificationsBell />
               <ProfileMenu user={user} onLogout={onLogout} />
             </>
@@ -123,7 +124,7 @@ function Shell({
 
       <main className="container">{children}</main>
 
-      {user && <MobileBottomNav />}
+      {user && <MobileBottomNav user={user} onLogout={onLogout} />}
     </div>
   )
 }
