@@ -2,7 +2,6 @@ import React, { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { api, clearToken, getToken, setToken } from './api'
 import type {
-  Contribution,
   Group,
   GroupDetail,
   User,
@@ -18,43 +17,35 @@ import {
   Skeleton,
   StatCard,
 } from './ui'
-import CircleCalculator from './CircleCalculator'
 import ProductPrinciples from './ProductPrinciples'
 import LiveCircleSimulator from './LiveCircleSimulator'
 import RotaLogo from './RotaLogo'
 import NetworkBackground from './NetworkBackground'
 import ThemeToggle from './ThemeToggle'
 import TrustNetworkDashboard from './TrustNetworkDashboard'
-import GroupGovernancePanel from './GroupGovernancePanel'
-import ReceiptReviewActions from './ReceiptReviewActions'
 import DiscoverPage from './DiscoverPage'
 import ReviewsPage from './ReviewsPage'
-import MemberReviewPanel from './MemberReviewPanel'
 import MessagesPage from './MessagesPage'
-import GroupChatPanel from './GroupChatPanel'
 import ActionCenterPage from './ActionCenterPage'
 import SettingsPage from './SettingsPage'
 import TrustPassportPage from './TrustPassportPage'
 import NotificationsBell from './NotificationsBell'
-import GroupHealthPanel from './GroupHealthPanel'
 import MobileBottomNav from './MobileBottomNav'
 import ProfileMenu from './ProfileMenu'
 import TodayPreview from './TodayPreview'
 import OnboardingPage from './OnboardingPage'
-import GroupExportActions from './GroupExportActions'
-import DisputeCasePanel from './DisputeCasePanel'
-import StructuredDisputeActions from './StructuredDisputeActions'
-import GroupShareInvite from './GroupShareInvite'
-import CycleReviewPrompt from './CycleReviewPrompt'
 import PublicInvitePage from './PublicInvitePage'
 import AdminSafetyDashboard from './AdminSafetyDashboard'
-import GroupCommandCenter from './GroupCommandCenter'
-import MemberResponsibilityTracker from './MemberResponsibilityTracker'
-import PaymentScheduleCalendar from './PaymentScheduleCalendar'
-import LatePaymentPanel from './LatePaymentPanel'
-import GroupAnnouncementsPanel from './GroupAnnouncementsPanel'
-import GroupSettingsPanel from './GroupSettingsPanel'
 import { groupOperationsApi } from './groupOperationsApi'
+import CompactGroupHeader from './CompactGroupHeader'
+import GroupWorkspaceTabs from './GroupWorkspaceTabs'
+import type { GroupWorkspaceTabId } from './GroupWorkspaceTabs'
+import GroupOverviewTab from './GroupOverviewTab'
+import GroupPaymentsTab from './GroupPaymentsTab'
+import GroupMembersTab from './GroupMembersTab'
+import GroupMessagesTab from './GroupMessagesTab'
+import GroupReviewsTab from './GroupReviewsTab'
+import GroupManageTab from './GroupManageTab'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -105,11 +96,11 @@ function Shell({
         <nav className="desktopNav">
           {user ? (
             <>
-              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/dashboard">My Groups</Link>
               <Link to="/actions">Actions</Link>
               <Link to="/discover">Discover</Link>
               <Link to="/messages">Messages</Link>
-              <Link to="/network">Trust Network</Link>
+              <Link to="/network">Trust Network Map</Link>
               <Link to="/groups/new">Create group</Link>
               <ThemeToggle />
               <NotificationsBell />
@@ -305,8 +296,8 @@ function Login({ onLogin }: { onLogin: () => Promise<void> }) {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  async function submit(e: FormEvent) {
-    e.preventDefault()
+  async function submit(event: FormEvent) {
+    event.preventDefault()
     setError('')
 
     try {
@@ -337,12 +328,12 @@ function Login({ onLogin }: { onLogin: () => Promise<void> }) {
 
         <label>
           Email
-          <input value={email} onChange={e => setEmail(e.target.value)} type="email" required />
+          <input value={email} onChange={event => setEmail(event.target.value)} type="email" required />
         </label>
 
         <label>
           Password
-          <input value={password} onChange={e => setPassword(e.target.value)} type="password" required />
+          <input value={password} onChange={event => setPassword(event.target.value)} type="password" required />
         </label>
 
         <Button full type="submit">Log in</Button>
@@ -360,8 +351,8 @@ function Register({ onLogin }: { onLogin: () => Promise<void> }) {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  async function submit(e: FormEvent) {
-    e.preventDefault()
+  async function submit(event: FormEvent) {
+    event.preventDefault()
     setError('')
 
     try {
@@ -393,22 +384,22 @@ function Register({ onLogin }: { onLogin: () => Promise<void> }) {
 
         <label>
           Name
-          <input value={name} onChange={e => setName(e.target.value)} required />
+          <input value={name} onChange={event => setName(event.target.value)} required />
         </label>
 
         <label>
           Email
-          <input value={email} onChange={e => setEmail(e.target.value)} type="email" required />
+          <input value={email} onChange={event => setEmail(event.target.value)} type="email" required />
         </label>
 
         <label>
           Phone
-          <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Optional" />
+          <input value={phone} onChange={event => setPhone(event.target.value)} placeholder="Optional" />
         </label>
 
         <label>
           Password
-          <input value={password} onChange={e => setPassword(e.target.value)} type="password" minLength={8} required />
+          <input value={password} onChange={event => setPassword(event.target.value)} type="password" minLength={8} required />
         </label>
 
         <Button full type="submit">Create account</Button>
@@ -443,8 +434,8 @@ function Dashboard({ user }: { user: User }) {
     load()
   }, [])
 
-  async function join(e: FormEvent) {
-    e.preventDefault()
+  async function join(event: FormEvent) {
+    event.preventDefault()
     setError('')
     setJoinMessage('')
 
@@ -452,7 +443,7 @@ function Dashboard({ user }: { user: User }) {
       const result = await groupOperationsApi.joinByInvite(inviteCode)
 
       if (result.status === 'approval_required') {
-        setJoinMessage('Your join request was sent to the organizer for approval.')
+        setJoinMessage('Your join request was sent for approval.')
         return
       }
 
@@ -469,9 +460,9 @@ function Dashboard({ user }: { user: User }) {
     <div className="dashboardLayout">
       <PageHeader
         className="wide"
-        eyebrow="Dashboard"
+        eyebrow="My Groups"
         title={`Welcome, ${user.name}`}
-        description="See what needs attention across your circles, messages, discovery requests, and trust network."
+        description="See your circles, action items, messages, discovery requests, and trust network."
         meta={
           <>
             <Badge status={user.verification_status} dot />
@@ -530,7 +521,7 @@ function Dashboard({ user }: { user: User }) {
           className="wide"
           tone="success"
           title="No urgent group actions"
-          description="Your dashboard is clear. Open your groups to review ledgers, chat, and agreement status."
+          description="Your dashboard is clear. Open a group to review its workspace."
           action={<ButtonLink to="/discover" variant="secondary" size="sm">Discover circles</ButtonLink>}
           icon="✓"
         />
@@ -541,7 +532,7 @@ function Dashboard({ user }: { user: User }) {
       <Card
         className="mainPanel"
         eyebrow="Your circles"
-        title="Active groups"
+        title="My Groups"
         actions={<ButtonLink to="/groups/new" variant="secondary" size="sm">New group</ButtonLink>}
       >
         {loadingGroups ? (
@@ -581,12 +572,12 @@ function Dashboard({ user }: { user: User }) {
               Invite code
               <input
                 value={inviteCode}
-                onChange={e => setInviteCode(e.target.value.toUpperCase())}
+                onChange={event => setInviteCode(event.target.value.toUpperCase())}
                 placeholder="Example: ABC123"
               />
             </label>
 
-            <Button full type="submit">Join group</Button>
+            <Button full type="submit">Join or request access</Button>
           </form>
         </Card>
 
@@ -605,9 +596,9 @@ function Dashboard({ user }: { user: User }) {
           <ButtonLink full variant="secondary" to="/simulator">Try simulator</ButtonLink>
         </Card>
 
-        <Card eyebrow="Trust Network" title="See circle health and trusted people.">
-          <p>Open the Trust Network dashboard to inspect group health, trusted members, and relationship signals.</p>
-          <ButtonLink full variant="secondary" to="/network">View Trust Network</ButtonLink>
+        <Card eyebrow="Trust Network Map" title="See trusted people and paths.">
+          <p>Open the Trust Network Map to inspect group health, trusted members, and relationship signals.</p>
+          <ButtonLink full variant="secondary" to="/network">View Trust Network Map</ButtonLink>
         </Card>
       </aside>
     </div>
@@ -623,8 +614,8 @@ function NewGroup() {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  async function submit(e: FormEvent) {
-    e.preventDefault()
+  async function submit(event: FormEvent) {
+    event.preventDefault()
     setError('')
 
     try {
@@ -663,22 +654,22 @@ function NewGroup() {
 
         <label>
           Group name
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Example: Family monthly circle" required />
+          <input value={name} onChange={event => setName(event.target.value)} placeholder="Example: Family monthly circle" required />
         </label>
 
         <label>
           Contribution amount
-          <input value={amount} onChange={e => setAmount(Number(e.target.value))} type="number" min="1" required />
+          <input value={amount} onChange={event => setAmount(Number(event.target.value))} type="number" min="1" required />
         </label>
 
         <label>
           Currency
-          <input value={currency} onChange={e => setCurrency(e.target.value.toUpperCase())} maxLength={8} required />
+          <input value={currency} onChange={event => setCurrency(event.target.value.toUpperCase())} maxLength={8} required />
         </label>
 
         <label>
           Frequency
-          <select value={frequency} onChange={e => setFrequency(e.target.value)}>
+          <select value={frequency} onChange={event => setFrequency(event.target.value)}>
             <option value="monthly">Monthly</option>
             <option value="weekly">Weekly</option>
           </select>
@@ -686,7 +677,7 @@ function NewGroup() {
 
         <label>
           Member limit
-          <input value={memberLimit} onChange={e => setMemberLimit(Number(e.target.value))} type="number" min="2" max="50" />
+          <input value={memberLimit} onChange={event => setMemberLimit(Number(event.target.value))} type="number" min="2" max="50" />
         </label>
 
         <ActionBanner
@@ -721,6 +712,7 @@ function GroupPage({ user }: { user: User }) {
   const { id } = useParams()
   const [detail, setDetail] = useState<GroupDetail | null>(null)
   const [error, setError] = useState('')
+  const [activeTab, setActiveTab] = useState<GroupWorkspaceTabId>('overview')
   const [dueDate, setDueDate] = useState(() => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16))
 
   async function load() {
@@ -733,11 +725,11 @@ function GroupPage({ user }: { user: User }) {
     load().catch(err => setError(err instanceof Error ? err.message : 'Could not load group'))
   }, [id])
 
-  const currentCycle = useMemo(() => detail?.cycles[0], [detail])
+  const currentCycle = useMemo(() => detail?.cycles[0] || null, [detail])
 
   const currentContributions = useMemo(() => {
     if (!detail || !currentCycle) return []
-    return detail.contributions.filter(c => c.cycle_id === currentCycle.id)
+    return detail.contributions.filter(contribution => contribution.cycle_id === currentCycle.id)
   }, [detail, currentCycle])
 
   if (error) {
@@ -747,19 +739,17 @@ function GroupPage({ user }: { user: User }) {
         title="Could not load this group"
         description={error}
         icon="!"
-        action={<ButtonLink to="/dashboard" variant="secondary" size="sm">Back to dashboard</ButtonLink>}
+        action={<ButtonLink to="/dashboard" variant="secondary" size="sm">Back to My Groups</ButtonLink>}
       />
     )
   }
 
   if (!detail) return <Skeleton variant="page" />
 
-  const myContribution = currentContributions.find(c => c.payer_user_id === user.id)
-  const canConfirm = currentContributions.some(c => c.receiver_user_id === user.id)
-  const isOrganizer = detail.members.some(m => m.user_id === user.id && ['organizer', 'co_organizer'].includes(m.role))
+  const isOrganizer = detail.members.some(member => member.user_id === user.id && ['organizer', 'co_organizer'].includes(member.role))
 
-  async function createCycle(e: FormEvent) {
-    e.preventDefault()
+  async function createCycle(event: FormEvent) {
+    event.preventDefault()
     if (!id) return
 
     setError('')
@@ -767,453 +757,93 @@ function GroupPage({ user }: { user: User }) {
     try {
       await api.createCycle(id, new Date(dueDate).toISOString())
       await load()
+      setActiveTab('overview')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create cycle')
     }
   }
 
-  const confirmedTotal = currentContributions
-    .filter(c => c.status === 'confirmed' || c.status === 'group_verified')
-    .reduce((sum, c) => sum + c.amount, 0)
-
-  const paidTotal = currentContributions
-    .filter(c => c.status === 'paid' || c.status === 'confirmed' || c.status === 'group_verified')
-    .reduce((sum, c) => sum + c.amount, 0)
-
-  const expectedTotal = currentContributions.reduce((sum, c) => sum + c.amount, 0)
-  const pendingCount = currentContributions.filter(c => c.status === 'pending').length
-  const confirmedCount = currentContributions.filter(c => c.status === 'confirmed' || c.status === 'group_verified').length
-  const progressPercent = expectedTotal ? (confirmedTotal / expectedTotal) * 100 : 0
+  const pendingContributions = currentContributions.filter(contribution => contribution.status === 'pending').length
+  const disputedContributions = currentContributions.filter(contribution => contribution.status === 'disputed').length
+  const unpaidOrIssueCount = pendingContributions + disputedContributions
+  const reviewCount = detail.cycles.filter(cycle => ['completed', 'cycle_review'].includes(cycle.status)).length
 
   return (
-    <div className="stack">
-      <PageHeader
-        eyebrow={`Invite code: ${detail.group.invite_code}`}
-        title={detail.group.name}
-        description={`${detail.group.contribution_amount} ${detail.group.currency} • ${detail.group.frequency} • ${detail.group.payout_method.replace(/_/g, ' ')}`}
-        meta={
-          <>
-            <Badge status={detail.group.status} dot />
-            <Badge tone="success">Rota holds €0</Badge>
-          </>
-        }
-        actions={
-          <>
-            <ButtonLink to={`/g/${detail.group.invite_code}`} variant="secondary">Public invite</ButtonLink>
-            <ButtonLink to="/messages" variant="secondary">Messages</ButtonLink>
-            <ButtonLink to="/dashboard" variant="ghost">Dashboard</ButtonLink>
-          </>
-        }
+    <div className="compactGroupWorkspace">
+      <CompactGroupHeader
+        detail={detail}
+        isOrganizer={isOrganizer}
       />
 
       <ActionBanner
         tone="info"
         title="Rota does not hold money"
-        description="Members pay the receiver directly, then record proof, confirmation, and disputes here."
+        description="Members pay the receiver directly. Rota coordinates proof, confirmations, disputes, rules, and trust signals."
         icon="0%"
       />
 
-      <GroupCommandCenter groupId={detail.group.id} />
-
-      <section className="statsGrid">
-        <StatCard
-          label="Expected pot"
-          value={`${expectedTotal || detail.group.contribution_amount * detail.members.length} ${detail.group.currency}`}
-          icon="◎"
-          tone="info"
-        />
-        <StatCard
-          label="Confirmed"
-          value={`${confirmedTotal} ${detail.group.currency}`}
-          icon="✓"
-          tone="success"
-        />
-        <StatCard
-          label="Marked paid"
-          value={`${paidTotal} ${detail.group.currency}`}
-          icon="↗"
-          tone="warning"
-        />
-        <StatCard
-          label="Pending rows"
-          value={pendingCount}
-          icon="…"
-          tone={pendingCount > 0 ? 'warning' : 'success'}
-        />
-      </section>
-
-      <GroupHealthPanel groupId={detail.group.id} />
-
-      <GroupAnnouncementsPanel
-        groupId={detail.group.id}
-        isOrganizer={isOrganizer}
+      <GroupWorkspaceTabs
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        counts={{
+          payments: unpaidOrIssueCount,
+          reviews: reviewCount,
+        }}
       />
 
-      <GroupShareInvite
-        inviteCode={detail.group.invite_code}
-        groupName={detail.group.name}
-      />
-
-      <GroupExportActions
-        groupId={detail.group.id}
-        groupName={detail.group.name}
-      />
-
-      <GroupSettingsPanel
-        groupId={detail.group.id}
-        isOrganizer={isOrganizer}
-      />
-
-      <GroupGovernancePanel
-        groupId={detail.group.id}
-        isOrganizer={isOrganizer}
-        onChanged={load}
-      />
-
-      <DisputeCasePanel
-        groupId={detail.group.id}
-        isOrganizer={isOrganizer}
-        onChanged={load}
-      />
-
-      <LatePaymentPanel
-        groupId={detail.group.id}
-        currentUserId={user.id}
-        isOrganizer={isOrganizer}
-        onChanged={load}
-      />
-
-      <CycleReviewPrompt groupId={detail.group.id} />
-
-      <MemberResponsibilityTracker
-        groupId={detail.group.id}
-        onChanged={load}
-      />
-
-      <PaymentScheduleCalendar groupId={detail.group.id} />
-
-      <CircleCalculator detail={detail} currentUserId={user.id} />
-
-      <section className="grid two">
-        <Card className="cycleCard">
-          <div className="panelHeader">
-            <div>
-              <p className="uiEyebrow">Current cycle</p>
-              <h2>{currentCycle ? `Cycle ${currentCycle.cycle_number}` : 'No cycle yet'}</h2>
-            </div>
-            {currentCycle && <Badge tone="success">{confirmedCount}/{currentContributions.length} confirmed</Badge>}
-          </div>
-
-          {currentCycle ? (
-            <>
-              <div className="receiverBox">
-                <span>This cycle’s receiver</span>
-                <strong>{currentCycle.receiver_name}</strong>
-                <small>Due {new Date(currentCycle.due_date).toLocaleString()}</small>
-              </div>
-
-              <div className="progress">
-                <span style={{ width: `${progressPercent}%` }} />
-              </div>
-
-              <p className="mutedText">{confirmedTotal} {detail.group.currency} confirmed out of {expectedTotal} expected.</p>
-            </>
-          ) : (
-            <EmptyState
-              title="No cycle yet"
-              description="The organizer can create the first cycle after members accept the Circle Commitment."
-            />
-          )}
-
-          {isOrganizer && (
-            <form className="form compact cycleForm" onSubmit={createCycle}>
-              <label>
-                Next cycle due date
-                <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)} />
-              </label>
-
-              <Button type="submit">Create next cycle</Button>
-            </form>
-          )}
-        </Card>
-
-        <Card
-          title={`${detail.members.length} members`}
-          eyebrow="Members"
-        >
-          <div className="memberList">
-            {detail.members.map(m => (
-              <div key={m.id} className="memberRow">
-                <span className="avatar">{m.name?.slice(0, 1).toUpperCase() || '?'}</span>
-                <div>
-                  <strong>{m.name}</strong>
-                  <span>{m.email}</span>
-                </div>
-                <div className="memberRowActions">
-                  <Badge status={m.role} tone={m.role === 'organizer' ? 'purple' : 'neutral'} />
-                  {m.user_id !== user.id && (
-                    <ButtonLink size="sm" variant="ghost" to={`/reviews/${m.user_id}`}>
-                      Reviews
-                    </ButtonLink>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </section>
-
-      <div id="member-review-panel">
-        <MemberReviewPanel detail={detail} currentUserId={user.id} />
-      </div>
-
-      <GroupChatPanel groupId={detail.group.id} />
-
-      {currentCycle && myContribution && (
-        <PayCard contribution={myContribution} groupCurrency={detail.group.currency} onSaved={load} />
-      )}
-
-      {currentCycle && (canConfirm || isOrganizer) && (
-        <ConfirmTable contributions={currentContributions} currency={detail.group.currency} onSaved={load} />
-      )}
-
-      <Card wide eyebrow="Shared record" title="Contribution ledger">
-        {currentContributions.length === 0 ? (
-          <EmptyState
-            title="No contribution rows yet"
-            description="Create a cycle to generate the shared ledger for this group."
-          />
-        ) : (
-          <ContributionTable
-            contributions={currentContributions}
-            currency={detail.group.currency}
-            actions={c => (
-              <div className="ledgerActionStack">
-                <ReceiptReviewActions
-                  contribution={c}
-                  currentUserId={user.id}
-                  onSaved={load}
-                />
-
-                <StructuredDisputeActions
-                  contribution={c}
-                  onSaved={load}
-                />
-              </div>
-            )}
-          />
-        )}
-      </Card>
-
-      <Card wide eyebrow="Transparency" title="Audit log">
-        <div className="timeline">
-          {detail.audit_logs.length === 0 ? (
-            <EmptyState
-              title="No activity yet"
-              description="Group events, payment updates, confirmations, and governance actions will appear here."
-            />
-          ) : detail.audit_logs.map(log => (
-            <div key={log.id} className="timelineItem">
-              <span />
-              <div>
-                <strong>{log.action}</strong>
-                <small>{new Date(log.created_at).toLocaleString()}</small>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
-  )
-}
-
-function PayCard({
-  contribution,
-  groupCurrency,
-  onSaved,
-}: {
-  contribution: Contribution
-  groupCurrency: string
-  onSaved: () => Promise<void>
-}) {
-  const [reference, setReference] = useState(contribution.payment_reference || '')
-  const [note, setNote] = useState(contribution.note || '')
-  const [proof, setProof] = useState<File | null>(null)
-  const [error, setError] = useState('')
-  const [saving, setSaving] = useState(false)
-
-  async function submit(e: FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    setError('')
-
-    try {
-      const form = new FormData()
-      form.append('payment_reference', reference)
-      form.append('note', note)
-      if (proof) form.append('proof', proof)
-
-      await api.markPaid(contribution.id, form)
-      await onSaved()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save payment proof')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <form className="uiCard form paymentCard" onSubmit={submit}>
-      <div>
-        <p className="uiEyebrow">Your action</p>
-        <h2>Record your payment proof</h2>
-        <p>
-          Pay <strong>{contribution.amount} {groupCurrency}</strong> to{' '}
-          <strong>{contribution.receiver_name}</strong> outside the app, then upload proof here.
-        </p>
-        <p>Status: <Badge status={contribution.status} /></p>
-      </div>
-
-      {error && (
-        <ActionBanner
-          tone="danger"
-          title="Could not save payment proof"
-          description={error}
-          icon="!"
+      {activeTab === 'overview' && (
+        <GroupOverviewTab
+          detail={detail}
+          user={user}
+          isOrganizer={isOrganizer}
+          currentCycle={currentCycle}
+          currentContributions={currentContributions}
+          dueDate={dueDate}
+          setDueDate={setDueDate}
+          onCreateCycle={createCycle}
         />
       )}
 
-      <label>
-        Payment reference
-        <input value={reference} onChange={e => setReference(e.target.value)} placeholder="Bank/mobile money reference" />
-      </label>
-
-      <label>
-        Note
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Optional note for the receiver or organizer" />
-      </label>
-
-      <label>
-        Proof screenshot or PDF
-        <input type="file" accept="image/*,application/pdf" onChange={e => setProof(e.target.files?.[0] || null)} />
-      </label>
-
-      <Button full type="submit" loading={saving}>
-        I paid / upload proof
-      </Button>
-    </form>
-  )
-}
-
-function ConfirmTable({
-  contributions,
-  currency,
-  onSaved,
-}: {
-  contributions: Contribution[]
-  currency: string
-  onSaved: () => Promise<void>
-}) {
-  const [error, setError] = useState('')
-
-  async function confirm(id: string) {
-    setError('')
-
-    try {
-      await api.confirmContribution(id)
-      await onSaved()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not confirm')
-    }
-  }
-
-  async function dispute(id: string) {
-    const reason = window.prompt('Why are you disputing this contribution?')
-    if (!reason) return
-
-    try {
-      await api.disputeContribution(id, reason)
-      await onSaved()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not dispute')
-    }
-  }
-
-  return (
-    <Card wide eyebrow="Receiver / organizer" title="Confirm received payments">
-      {error && (
-        <ActionBanner
-          tone="danger"
-          title="Payment review failed"
-          description={error}
-          icon="!"
+      {activeTab === 'payments' && (
+        <GroupPaymentsTab
+          detail={detail}
+          user={user}
+          isOrganizer={isOrganizer}
+          onChanged={load}
         />
       )}
 
-      <ContributionTable
-        contributions={contributions}
-        currency={currency}
-        actions={c => (
-          <div className="rowActions">
-            <Button
-              size="sm"
-              type="button"
-              onClick={() => confirm(c.id)}
-              disabled={c.status === 'confirmed' || c.status === 'group_verified'}
-            >
-              Confirm
-            </Button>
-            <Button
-              size="sm"
-              type="button"
-              variant="ghost"
-              onClick={() => dispute(c.id)}
-            >
-              Dispute
-            </Button>
-          </div>
-        )}
-      />
-    </Card>
-  )
-}
+      {activeTab === 'members' && (
+        <GroupMembersTab
+          detail={detail}
+          user={user}
+          isOrganizer={isOrganizer}
+          onChanged={load}
+        />
+      )}
 
-function ContributionTable({
-  contributions,
-  currency,
-  actions,
-}: {
-  contributions: Contribution[]
-  currency: string
-  actions?: (c: Contribution) => React.ReactNode
-}) {
-  return (
-    <div className="tableWrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Payer</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Reference</th>
-            <th>Proof</th>
-            {actions && <th>Actions</th>}
-          </tr>
-        </thead>
+      {activeTab === 'messages' && (
+        <GroupMessagesTab
+          groupId={detail.group.id}
+          isOrganizer={isOrganizer}
+        />
+      )}
 
-        <tbody>
-          {contributions.map(c => (
-            <tr key={c.id}>
-              <td>{c.payer_name}</td>
-              <td>{c.amount} {currency}</td>
-              <td><Badge status={c.status} /></td>
-              <td>{c.payment_reference || '-'}</td>
-              <td>{c.proof_url ? <a href={`${api.apiBase}${c.proof_url}`} target="_blank" rel="noreferrer">View proof</a> : '-'}</td>
-              {actions && <td>{actions(c)}</td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {activeTab === 'reviews' && (
+        <GroupReviewsTab
+          detail={detail}
+          currentUserId={user.id}
+        />
+      )}
+
+      {activeTab === 'manage' && (
+        <GroupManageTab
+          detail={detail}
+          user={user}
+          isOrganizer={isOrganizer}
+          onChanged={load}
+        />
+      )}
     </div>
   )
 }

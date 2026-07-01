@@ -8682,3 +8682,455 @@ body[data-theme='dark'],
 :root[data-theme='dark'] .admissionRequestCard h4 {
   color: #f8fafc;
 }
+/* -------------------------------------------------------
+   Compact Group Workspace
+------------------------------------------------------- */
+
+.compactGroupWorkspace {
+  display: grid;
+  gap: 18px;
+}
+
+.compactGroupHeader {
+  border-radius: 34px;
+  padding: 30px 34px;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(34, 197, 94, 0.12), transparent 34%),
+    color-mix(in srgb, var(--ui-surface, #ffffff) 94%, transparent);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+  box-shadow: var(--ui-shadow-lift, 0 28px 80px rgba(15, 23, 42, 0.14));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  backdrop-filter: blur(18px);
+}
+
+.compactGroupMain {
+  min-width: 0;
+}
+
+.compactGroupTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.compactGroupTitleRow h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  letter-spacing: -0.06em;
+  color: var(--ui-text, #0f172a);
+}
+
+.compactGroupMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--ui-muted, #64748b);
+  font-weight: 850;
+}
+
+.compactGroupMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.compactGroupMeta span:not(:last-child)::after {
+  content: '•';
+  opacity: 0.55;
+  margin-left: 8px;
+}
+
+.compactGroupActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.compactTextLink {
+  color: var(--ui-muted-strong, #475569);
+  text-decoration: none;
+  font-weight: 950;
+  padding: 10px 12px;
+  border-radius: 999px;
+}
+
+.compactTextLink:hover {
+  background: var(--ui-surface-soft, #f8fafc);
+}
+
+.groupWorkspaceTabs {
+  position: sticky;
+  top: 72px;
+  z-index: 35;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px;
+  border-radius: 26px;
+  background: color-mix(in srgb, var(--ui-surface, #ffffff) 92%, transparent);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.groupWorkspaceTabs button {
+  position: relative;
+  min-height: 54px;
+  border-radius: 20px;
+  border: 0;
+  background: transparent;
+  color: var(--ui-muted-strong, #475569);
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.groupWorkspaceTabs button.active {
+  color: var(--ui-primary, #16a34a);
+  background: var(--ui-primary-soft, #dcfce7);
+}
+
+.groupWorkspaceTabs button strong {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--ui-danger, #dc2626);
+  color: white;
+  font-size: 0.68rem;
+  padding: 0 6px;
+}
+
+.workspaceTabIcon {
+  font-size: 1rem;
+}
+
+.workspaceTabShortLabel {
+  display: none;
+}
+
+.groupWorkspacePanel {
+  display: grid;
+  gap: 18px;
+}
+
+.groupTodayCard .uiActionBanner {
+  margin-bottom: 16px;
+}
+
+.compactTodayGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.compactTodayGrid .uiStatCard {
+  min-height: 118px;
+}
+
+.compactWorkspaceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+  gap: 18px;
+}
+
+.workspacePrimaryCard {
+  min-height: 100%;
+}
+
+.compactCycleSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.compactCycleSummary div {
+  border-radius: 20px;
+  padding: 14px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.compactCycleSummary span {
+  display: block;
+  color: var(--ui-muted, #64748b);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.compactCycleSummary strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ui-text, #0f172a);
+}
+
+.compactProgress {
+  margin-top: 14px;
+}
+
+.compactCycleForm {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.compactMemberPreview {
+  display: grid;
+  gap: 10px;
+}
+
+.compactMemberPreview > div,
+.compactMemberCard {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border-radius: 20px;
+  padding: 12px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.compactMemberPreview strong,
+.compactMemberPreview small,
+.compactMemberCard strong,
+.compactMemberCard small {
+  display: block;
+}
+
+.compactMemberPreview small,
+.compactMemberCard small {
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.compactActivityList {
+  display: grid;
+  gap: 0;
+}
+
+.compactActivityList > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.compactActivityList > div:last-child {
+  border-bottom: 0;
+}
+
+.compactActivityList > div > span {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--ui-text, #0f172a);
+  margin-top: 5px;
+}
+
+.compactActivityList strong,
+.compactActivityList small {
+  display: block;
+}
+
+.compactActivityList small {
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.compactPaymentAction {
+  max-width: 760px;
+}
+
+.compactMemberGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.compactManageGrid {
+  display: grid;
+  gap: 18px;
+}
+
+.compactManageGrid > .uiCard {
+  box-shadow: none;
+}
+
+.compactAuditTimeline {
+  max-height: 460px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+@media (max-width: 1100px) {
+  .compactTodayGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .compactWorkspaceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .compactCycleSummary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .compactGroupWorkspace {
+    gap: 14px;
+  }
+
+  .compactGroupHeader {
+    border-radius: 26px;
+    padding: 22px;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .compactGroupTitleRow {
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .compactGroupTitleRow h1 {
+    font-size: 2rem;
+  }
+
+  .compactGroupMeta {
+    gap: 6px;
+    font-size: 0.88rem;
+  }
+
+  .compactGroupActions {
+    justify-content: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .compactGroupActions .compactTextLink {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+
+  .groupWorkspaceTabs {
+    top: 62px;
+    grid-template-columns: repeat(6, minmax(74px, 1fr));
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-radius: 22px;
+    padding: 6px;
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
+  .groupWorkspaceTabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .groupWorkspaceTabs button {
+    min-height: 58px;
+    border-radius: 18px;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    font-size: 0.72rem;
+  }
+
+  .workspaceTabLabel {
+    display: none;
+  }
+
+  .workspaceTabShortLabel {
+    display: block;
+  }
+
+  .workspaceTabIcon {
+    font-size: 1.08rem;
+  }
+
+  .groupWorkspaceTabs button strong {
+    top: 3px;
+    right: 6px;
+  }
+
+  .compactTodayGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .compactTodayGrid .uiStatCard {
+    min-height: 105px;
+  }
+
+  .compactMemberGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .compactMemberCard {
+    grid-template-columns: auto 1fr;
+  }
+
+  .compactMemberCard .uiButton,
+  .compactMemberCard a {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .compactPaymentAction {
+    max-width: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .compactTodayGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .compactGroupActions {
+    grid-template-columns: 1fr;
+  }
+}
+
+:root[data-theme='dark'] .compactGroupHeader,
+:root[data-theme='dark'] .groupWorkspaceTabs {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .compactGroupTitleRow h1,
+:root[data-theme='dark'] .compactCycleSummary strong,
+:root[data-theme='dark'] .compactActivityList strong,
+:root[data-theme='dark'] .compactMemberCard strong {
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] .compactCycleSummary div,
+:root[data-theme='dark'] .compactMemberPreview > div,
+:root[data-theme='dark'] .compactMemberCard {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .groupWorkspaceTabs button.active {
+  background: rgba(34, 197, 94, 0.14);
+}
