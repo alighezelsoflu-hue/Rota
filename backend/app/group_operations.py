@@ -201,8 +201,14 @@ def latest_cycle(db: Session, group_id: str):
               receiver_user.name AS receiver_name,
               receiver_user.email AS receiver_email
             FROM cycles cy
-            LEFT JOIN group_members receiver_member ON receiver_member.id = cy.receiver_member_id
-            LEFT JOIN users receiver_user ON receiver_user.id = receiver_member.user_id
+            LEFT JOIN LATERAL (
+              SELECT c.receiver_user_id
+              FROM contributions c
+              WHERE c.cycle_id = cy.id
+              LIMIT 1
+            ) receiver_lookup ON TRUE
+            LEFT JOIN users receiver_user
+              ON receiver_user.id = receiver_lookup.receiver_user_id
             WHERE cy.group_id = :group_id
             ORDER BY cy.cycle_number DESC
             LIMIT 1
@@ -600,11 +606,24 @@ def payment_schedule(
               SUM(CASE WHEN c.status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
               SUM(CASE WHEN c.status = 'disputed' THEN 1 ELSE 0 END) AS disputed_count
             FROM cycles cy
-            LEFT JOIN group_members receiver_member ON receiver_member.id = cy.receiver_member_id
-            LEFT JOIN users receiver_user ON receiver_user.id = receiver_member.user_id
-            LEFT JOIN contributions c ON c.cycle_id = cy.id
+            LEFT JOIN LATERAL (
+              SELECT c2.receiver_user_id
+              FROM contributions c2
+              WHERE c2.cycle_id = cy.id
+              LIMIT 1
+            ) receiver_lookup ON TRUE
+            LEFT JOIN users receiver_user
+              ON receiver_user.id = receiver_lookup.receiver_user_id
+            LEFT JOIN contributions c
+              ON c.cycle_id = cy.id
             WHERE cy.group_id = :group_id
-            GROUP BY cy.id, receiver_user.name, receiver_user.email
+            GROUP BY
+              cy.id,
+              cy.cycle_number,
+              cy.status,
+              cy.due_date,
+              receiver_user.name,
+              receiver_user.email
             ORDER BY cy.cycle_number ASC
             """
         ),
