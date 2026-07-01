@@ -12,6 +12,136 @@ from .models import Group, GroupMember, User
 
 router = APIRouter()
 
+def table_exists(db: Session, table_name: str) -> bool:
+    row = db.execute(
+        text(
+            """
+            SELECT EXISTS (
+              SELECT 1
+              FROM information_schema.tables
+              WHERE table_name = :table_name
+            ) AS exists
+            """
+        ),
+        {"table_name": table_name},
+    ).mappings().first()
+
+    return bool(row and row["exists"])
+
+
+def table_columns(db: Session, table_name: str) -> set[str]:
+    rows = db.execute(
+        text(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = :table_name
+            """
+        ),
+        {"table_name": table_name},
+    ).mappings().all()
+
+    return {row["column_name"] for row in rows}
+
+
+def require_thread_member(db: Session, thread_id: str, user_id: str):
+    member = db.execute(
+        text(
+            """
+            SELECT *
+            FROM chat_thread_members
+            WHERE thread_id = :thread_id
+              AND user_id = :user_id
+            """
+        ),
+        {"thread_id": thread_id, "user_id": user_id},
+    ).mappings().first()
+
+    if not member:
+        raise HTTPException(status_code=403, detail="You are not a member of this chat thread")
+
+    return member
+
+
+def mark_thread_read_for_user(db: Session, thread_id: str, user_id: str):
+    require_thread_member(db, thread_id, user_id)
+
+    db.execute(
+        text(
+            """
+            UPDATE chat_thread_members
+            SET last_read_at = NOW()
+            WHERE thread_id = :thread_id
+              AND user_id = :user_id
+            """
+        ),
+        {"thread_id": thread_id, "user_id": user_id},
+    )
+
+    if not table_exists(db, "notifications"):
+        return
+
+    notification_columns = table_columns(db, "notifications")
+
+    if "read_at" not in notification_columns or "user_id" not in notification_columns:
+        return
+
+    set_parts = ["read_at = NOW()"]
+
+    if "updated_at" in notification_columns:
+        set_parts.append("updated_at = NOW()")
+
+    related_conditions = []
+
+    params = {
+        "user_id": user_id,
+        "thread_id": thread_id,
+        "messages_url": "/messages",
+        "thread_url": f"/messages?thread={thread_id}",
+    }
+
+    if "related_thread_id" in notification_columns:
+        related_conditions.append("related_thread_id = :thread_id")
+
+    if "related_url" in notification_columns:
+        related_conditions.append(
+            """
+            related_url = :messages_url
+            OR related_url = :thread_url
+            OR related_url LIKE '/messages%'
+            """
+        )
+
+    if "type" in notification_columns:
+        related_conditions.append(
+            """
+            type IN (
+              'group_message',
+              'direct_message',
+              'chat_message',
+              'message',
+              'group_messages'
+            )
+            """
+        )
+
+    if not related_conditions:
+        return
+
+    db.execute(
+        text(
+            f"""
+            UPDATE notifications
+            SET {", ".join(set_parts)}
+            WHERE user_id = :user_id
+              AND read_at IS NULL
+              AND (
+                {" OR ".join(f"({condition})" for condition in related_conditions)}
+              )
+            """
+        ),
+        params,
+    )
 
 class ChatMessageIn(BaseModel):
     body: str = Field(min_length=1, max_length=2000)
@@ -411,11 +541,22 @@ def list_chat_messages(
     ).mappings().all()
 
     db.commit()
-
+    mark_thread_read_for_user(db, thread_id, current_user.id)
+    db.commit()
     return [dict(row) for row in rows]
 
 
-@router.post("/chat/threads/{thread_id}/messages")
+@router.post("/chat/threads/{thread_id}/read")
+def mark_chat_thread_read(
+    thread_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    mark_thread_read_for_user(db, thread_id, current_user.id)
+    db.commit()
+
+    return {"read": True}
+
 def send_chat_message(
     thread_id: str,
     payload: ChatMessageIn,

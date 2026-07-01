@@ -1,245 +1,344 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { api } from './api'
-import type { ChatMessage, ChatThread } from './api'
+import { messageReadApi } from './messageReadApi'
+import { ActionBanner, Badge, Button, Card, EmptyState, PageHeader, Skeleton } from './ui'
 
-function acceptedConnectionsFromRequests(requests: { incoming: any[]; outgoing: any[] }) {
-  const acceptedIncoming = requests.incoming
-    .filter(request => request.status === 'accepted')
-    .map(request => ({
-      user_id: request.requester_user_id,
-      name: request.requester_name,
-      trust_score: request.requester_trust_score,
-    }))
+type ThreadLike = {
+  id: string
+  type?: string
+  group_id?: string | null
+  group_name?: string | null
+  other_user_id?: string | null
+  other_user_name?: string | null
+  other_user_email?: string | null
+  last_message_body?: string | null
+  last_message_at?: string | null
+  updated_at?: string | null
+  unread_count?: number
+  unread_messages?: number
+  unread?: number
+  title?: string
+  name?: string
+}
 
-  const acceptedOutgoing = requests.outgoing
-    .filter(request => request.status === 'accepted')
-    .map(request => ({
-      user_id: request.receiver_user_id,
-      name: request.receiver_name,
-      trust_score: request.receiver_trust_score,
-    }))
+type MessageLike = {
+  id: string
+  thread_id?: string
+  sender_user_id?: string
+  sender_name?: string | null
+  sender_email?: string | null
+  body: string
+  created_at: string
+  edited_at?: string | null
+  deleted_at?: string | null
+}
 
-  const byId = new Map<string, any>()
+function normalizeThreads(payload: any): ThreadLike[] {
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.threads)) return payload.threads
+  return []
+}
 
-  for (const connection of [...acceptedIncoming, ...acceptedOutgoing]) {
-    if (connection.user_id) byId.set(connection.user_id, connection)
+function normalizeMessages(payload: any): MessageLike[] {
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.messages)) return payload.messages
+  return []
+}
+
+function threadTitle(thread: ThreadLike) {
+  if (thread.title) return thread.title
+  if (thread.type === 'group') return thread.group_name || 'Group chat'
+  return thread.other_user_name || thread.other_user_email || thread.name || 'Direct message'
+}
+
+function threadSubtitle(thread: ThreadLike) {
+  if (thread.type === 'group') return 'Group conversation'
+  if (thread.other_user_email) return thread.other_user_email
+  return 'Trusted connection'
+}
+
+function threadUnreadCount(thread: ThreadLike) {
+  return Number(
+    thread.unread_count ??
+    thread.unread_messages ??
+    thread.unread ??
+    0,
+  )
+}
+
+function threadTime(thread: ThreadLike) {
+  const value = thread.last_message_at || thread.updated_at
+
+  if (!value) return ''
+
+  try {
+    return new Date(value).toLocaleString()
+  } catch {
+    return ''
   }
-
-  return Array.from(byId.values())
 }
 
 export default function MessagesPage() {
-  const [threads, setThreads] = useState<ChatThread[]>([])
-  const [selectedThread, setSelectedThread] = useState<ChatThread | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [requests, setRequests] = useState<{ incoming: any[]; outgoing: any[] }>({ incoming: [], outgoing: [] })
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const [threads, setThreads] = useState<ThreadLike[]>([])
+  const [selectedThreadId, setSelectedThreadId] = useState<string>('')
+  const [messages, setMessages] = useState<MessageLike[]>([])
   const [body, setBody] = useState('')
+  const [loadingThreads, setLoadingThreads] = useState(true)
+  const [loadingMessages, setLoadingMessages] = useState(false)
+  const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState('')
-  const bottomRef = useRef<HTMLDivElement | null>(null)
+  const [messageError, setMessageError] = useState('')
 
-  const acceptedConnections = useMemo(() => acceptedConnectionsFromRequests(requests), [requests])
+  const selectedThread = useMemo(
+    () => threads.find(thread => thread.id === selectedThreadId) || null,
+    [threads, selectedThreadId],
+  )
 
-  async function loadThreads() {
-    const [threadData, requestData] = await Promise.all([
-      api.chatThreads(),
-      api.discoveryRequests(),
-    ])
+  async function loadThreads(preferredThreadId?: string) {
+    setLoadingThreads(true)
+    setError('')
 
-    setThreads(threadData)
-    setRequests(requestData)
+    try {
+      const payload = await api.chatThreads()
+      const loadedThreads = normalizeThreads(payload)
+      setThreads(loadedThreads)
 
-    if (!selectedThread && threadData.length > 0) {
-      setSelectedThread(threadData[0])
-      setMessages(await api.chatMessages(threadData[0].id))
+      const urlThreadId = preferredThreadId || searchParams.get('thread') || ''
+      const nextSelectedThreadId =
+        loadedThreads.find(thread => thread.id === urlThreadId)?.id ||
+        selectedThreadId ||
+        loadedThreads[0]?.id ||
+        ''
+
+      setSelectedThreadId(nextSelectedThreadId)
+
+      if (nextSelectedThreadId) {
+        await loadMessages(nextSelectedThreadId)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load messages')
+    } finally {
+      setLoadingThreads(false)
+    }
+  }
+
+  async function loadMessages(threadId: string) {
+    if (!threadId) return
+
+    setLoadingMessages(true)
+    setMessageError('')
+
+    try {
+      const payload = await api.chatMessages(threadId)
+      setMessages(normalizeMessages(payload))
+
+      await messageReadApi.safeMarkThreadRead(threadId)
+
+      setThreads(current =>
+        current.map(thread =>
+          thread.id === threadId
+            ? {
+                ...thread,
+                unread_count: 0,
+                unread_messages: 0,
+                unread: 0,
+              }
+            : thread,
+        ),
+      )
+    } catch (err) {
+      setMessageError(err instanceof Error ? err.message : 'Could not load this conversation')
+    } finally {
+      setLoadingMessages(false)
     }
   }
 
   useEffect(() => {
-    loadThreads().catch(err => setError(err instanceof Error ? err.message : 'Could not load messages'))
+    loadThreads()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages.length])
-
-  async function selectThread(thread: ChatThread) {
-    setSelectedThread(thread)
-    setError('')
-
-    try {
-      setMessages(await api.chatMessages(thread.id))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load chat')
-    }
+  async function selectThread(threadId: string) {
+    setSelectedThreadId(threadId)
+    setSearchParams({ thread: threadId })
+    await loadMessages(threadId)
   }
 
-  async function openDirect(userId: string) {
-    setBusy(userId)
-    setError('')
+  async function sendMessage(event: FormEvent) {
+    event.preventDefault()
+
+    const text = body.trim()
+
+    if (!selectedThreadId || !text) return
+
+    setSending(true)
+    setMessageError('')
 
     try {
-      const thread = await api.directChatThread(userId)
-      setSelectedThread(thread)
-      setMessages(await api.chatMessages(thread.id))
-      await loadThreads()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not open private chat')
-    } finally {
-      setBusy('')
-    }
-  }
-
-  async function send(e: FormEvent) {
-    e.preventDefault()
-    if (!selectedThread || !body.trim()) return
-
-    setBusy('send')
-    setError('')
-
-    try {
-      const saved = await api.sendChatMessage(selectedThread.id, body)
-      setMessages(current => [...current, saved])
+      await api.sendChatMessage(selectedThreadId, text)
       setBody('')
-      await loadThreads()
+      await loadMessages(selectedThreadId)
+      await loadThreads(selectedThreadId)
+      messageReadApi.broadcastMessagesChanged()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send message')
+      setMessageError(err instanceof Error ? err.message : 'Could not send message')
     } finally {
-      setBusy('')
+      setSending(false)
     }
   }
 
-  async function report(message: ChatMessage) {
+  async function reportMessage(messageId: string) {
     const reason = window.prompt('Why are you reporting this message?')
+
     if (!reason) return
 
-    setError('')
-
     try {
-      await api.reportChatMessage(message.id, reason)
-      setError('Message reported for review.')
+      await api.reportChatMessage(messageId, reason)
+      setMessageError('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not report message')
+      setMessageError(err instanceof Error ? err.message : 'Could not report message')
     }
   }
 
   return (
     <div className="messagesPage">
-      <section className="messagesHero">
-        <div>
-          <p className="eyebrow">Trusted messages</p>
-          <h1>Chat with group members and accepted connections.</h1>
-          <p>
-            Private chat is only available after a connection request is accepted.
-            Group chat is only available to group members.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Messages"
+        title="Trusted conversations"
+        description="Use group chat for circle coordination and direct chat after a trusted connection is accepted."
+      />
 
       {error && (
-        <p className={error.includes('reported') ? 'safeNote' : 'error'}>
-          {error}
-        </p>
+        <ActionBanner
+          tone="danger"
+          title="Messages unavailable"
+          description={error}
+          icon="!"
+        />
       )}
 
-      <div className="messagesLayout">
-        <aside className="messageSidebar">
-          <div className="sidebarSection">
-            <p className="eyebrow">Chats</p>
+      <section className="messagesLayout">
+        <Card className="messagesThreadPanel" eyebrow="Inbox" title="Conversations">
+          {loadingThreads ? (
+            <Skeleton variant="card" />
+          ) : threads.length === 0 ? (
+            <EmptyState
+              icon="✉"
+              title="No conversations yet"
+              description="Open a group chat or connect with trusted members to start messaging."
+            />
+          ) : (
+            <div className="messageThreadList">
+              {threads.map(thread => {
+                const unread = threadUnreadCount(thread)
+                const active = thread.id === selectedThreadId
 
-            {threads.length === 0 ? (
-              <p className="mutedText">No chats yet.</p>
-            ) : threads.map(thread => (
-              <button
-                key={thread.id}
-                className={selectedThread?.id === thread.id ? 'threadButton selected' : 'threadButton'}
-                type="button"
-                onClick={() => selectThread(thread)}
-              >
-                <strong>{thread.label || (thread.type === 'group' ? 'Group chat' : 'Private chat')}</strong>
-                <span>{thread.type === 'group' ? 'Circle chat' : 'Private chat'}</span>
-                {thread.last_message && <small>{thread.last_message}</small>}
-              </button>
-            ))}
-          </div>
+                return (
+                  <button
+                    key={thread.id}
+                    type="button"
+                    className={active ? 'messageThreadItem active' : 'messageThreadItem'}
+                    onClick={() => selectThread(thread.id)}
+                  >
+                    <span className="messageThreadAvatar">
+                      {threadTitle(thread).slice(0, 1).toUpperCase()}
+                    </span>
 
-          <div className="sidebarSection">
-            <p className="eyebrow">Accepted connections</p>
+                    <span className="messageThreadText">
+                      <strong>{threadTitle(thread)}</strong>
+                      <small>{thread.last_message_body || threadSubtitle(thread)}</small>
+                      {threadTime(thread) && <em>{threadTime(thread)}</em>}
+                    </span>
 
-            {acceptedConnections.length === 0 ? (
-              <p className="mutedText">Accept a connection request to start private chat.</p>
-            ) : acceptedConnections.map(connection => (
-              <button
-                key={connection.user_id}
-                className="connectionChatButton"
-                type="button"
-                disabled={busy === connection.user_id}
-                onClick={() => openDirect(connection.user_id)}
-              >
-                <strong>{connection.name}</strong>
-                <span>Trust {connection.trust_score ?? '-'}</span>
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        <section className="messageWindow">
-          {selectedThread ? (
-            <>
-              <div className="messageWindowHeader">
-                <div>
-                  <p className="eyebrow">{selectedThread.type === 'group' ? 'Circle chat' : 'Private chat'}</p>
-                  <h2>{selectedThread.label || 'Conversation'}</h2>
-                </div>
-              </div>
-
-              <div className="chatSafetyNote">
-                Rota does not hold or transfer money. Never send money outside an agreed group cycle.
-              </div>
-
-              <div className="chatMessages large">
-                {messages.length === 0 ? (
-                  <p className="mutedText">No messages yet.</p>
-                ) : messages.map(message => (
-                  <div key={message.id} className={message.mine ? 'chatBubble mine' : 'chatBubble'}>
-                    <div>
-                      <strong>{message.sender_name}</strong>
-                      <small>{message.created_at ? new Date(message.created_at).toLocaleString() : ''}</small>
-                    </div>
-
-                    <p>{message.body}</p>
-
-                    {!message.mine && (
-                      <button className="ghost mini" type="button" onClick={() => report(message)}>
-                        Report
-                      </button>
+                    {unread > 0 && (
+                      <span className="messageThreadUnread">
+                        {unread > 99 ? '99+' : unread}
+                      </span>
                     )}
-                  </div>
-                ))}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </Card>
 
-                <div ref={bottomRef} />
+        <Card className="messagesConversationPanel" wide>
+          {!selectedThread ? (
+            <EmptyState
+              icon="✉"
+              title="Choose a conversation"
+              description="Select a thread to read and send messages."
+            />
+          ) : (
+            <>
+              <div className="conversationHeader">
+                <div>
+                  <p className="uiEyebrow">{selectedThread.type === 'group' ? 'Group chat' : 'Direct chat'}</p>
+                  <h2>{threadTitle(selectedThread)}</h2>
+                  <p>{threadSubtitle(selectedThread)}</p>
+                </div>
+
+                <Badge tone={selectedThread.type === 'group' ? 'success' : 'info'}>
+                  {selectedThread.type === 'group' ? 'Group' : 'Direct'}
+                </Badge>
               </div>
 
-              <form className="chatComposer" onSubmit={send}>
+              {messageError && (
+                <ActionBanner
+                  tone="danger"
+                  title="Conversation problem"
+                  description={messageError}
+                  icon="!"
+                />
+              )}
+
+              <div className="conversationMessages">
+                {loadingMessages ? (
+                  <Skeleton variant="card" />
+                ) : messages.length === 0 ? (
+                  <EmptyState
+                    icon="◎"
+                    title="No messages yet"
+                    description="Send the first message in this conversation."
+                  />
+                ) : (
+                  messages.map(message => (
+                    <article key={message.id} className="conversationMessage">
+                      <div>
+                        <strong>{message.sender_name || message.sender_email || 'Member'}</strong>
+                        <small>{new Date(message.created_at).toLocaleString()}</small>
+                      </div>
+
+                      <p>{message.deleted_at ? 'This message was deleted.' : message.body}</p>
+
+                      {!message.deleted_at && (
+                        <button type="button" onClick={() => reportMessage(message.id)}>
+                          Report
+                        </button>
+                      )}
+                    </article>
+                  ))
+                )}
+              </div>
+
+              <form className="conversationComposer" onSubmit={sendMessage}>
                 <input
                   value={body}
                   onChange={event => setBody(event.target.value)}
                   placeholder="Write a message..."
-                  maxLength={2000}
                 />
-                <button className="button" type="submit" disabled={busy === 'send' || !body.trim()}>
-                  {busy === 'send' ? 'Sending...' : 'Send'}
-                </button>
+
+                <Button type="submit" loading={sending} disabled={!body.trim()}>
+                  Send
+                </Button>
               </form>
             </>
-          ) : (
-            <div className="emptyState">
-              <h3>Select a chat</h3>
-              <p>Open a group chat or start a private chat with an accepted connection.</p>
-            </div>
           )}
-        </section>
-      </div>
+        </Card>
+      </section>
     </div>
   )
 }

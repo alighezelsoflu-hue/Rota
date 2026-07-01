@@ -1,124 +1,177 @@
-import { FormEvent, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { FormEvent, useEffect, useState } from 'react'
 import { api } from './api'
-import type { ChatMessage, ChatThread } from './api'
+import { messageReadApi } from './messageReadApi'
+import { ActionBanner, Badge, Button, Card, EmptyState, Skeleton } from './ui'
 
 type Props = {
   groupId: string
 }
 
+type ThreadLike = {
+  id: string
+  type?: string
+  group_id?: string | null
+  group_name?: string | null
+}
+
+type MessageLike = {
+  id: string
+  thread_id?: string
+  sender_user_id?: string
+  sender_name?: string | null
+  sender_email?: string | null
+  body: string
+  created_at: string
+  deleted_at?: string | null
+}
+
+function normalizeMessages(payload: any): MessageLike[] {
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.messages)) return payload.messages
+  return []
+}
+
+function normalizeThread(payload: any): ThreadLike | null {
+  if (!payload) return null
+  if (payload.thread) return payload.thread
+  return payload
+}
+
 export default function GroupChatPanel({ groupId }: Props) {
-  const [thread, setThread] = useState<ChatThread | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [thread, setThread] = useState<ThreadLike | null>(null)
+  const [messages, setMessages] = useState<MessageLike[]>([])
   const [body, setBody] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  const bottomRef = useRef<HTMLDivElement | null>(null)
 
-  async function load() {
-    const opened = await api.groupChatThread(groupId)
-    setThread(opened)
-    setMessages(await api.chatMessages(opened.id))
-  }
-
-  useEffect(() => {
-    load().catch(err => setError(err instanceof Error ? err.message : 'Could not load group chat'))
-  }, [groupId])
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages.length])
-
-  async function send(e: FormEvent) {
-    e.preventDefault()
-    if (!thread || !body.trim()) return
-
-    setBusy(true)
+  async function loadThreadAndMessages() {
+    setLoading(true)
     setError('')
 
     try {
-      const saved = await api.sendChatMessage(thread.id, body)
-      setMessages(current => [...current, saved])
-      setBody('')
+      const threadPayload = await api.groupChatThread(groupId)
+      const loadedThread = normalizeThread(threadPayload)
+
+      if (!loadedThread?.id) {
+        throw new Error('Group chat thread was not created')
+      }
+
+      setThread(loadedThread)
+
+      const messagePayload = await api.chatMessages(loadedThread.id)
+      setMessages(normalizeMessages(messagePayload))
+
+      await messageReadApi.safeMarkThreadRead(loadedThread.id)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send message')
+      setError(err instanceof Error ? err.message : 'Could not load group chat')
     } finally {
-      setBusy(false)
+      setLoading(false)
     }
   }
 
-  async function report(message: ChatMessage) {
-    const reason = window.prompt('Why are you reporting this message?')
-    if (!reason) return
+  useEffect(() => {
+    loadThreadAndMessages()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId])
 
+  async function sendMessage(event: FormEvent) {
+    event.preventDefault()
+
+    const text = body.trim()
+
+    if (!thread?.id || !text) return
+
+    setSending(true)
     setError('')
 
     try {
-      await api.reportChatMessage(message.id, reason)
-      setError('Message reported for review.')
+      await api.sendChatMessage(thread.id, text)
+      setBody('')
+      await loadThreadAndMessages()
+      messageReadApi.broadcastMessagesChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send group message')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function reportMessage(messageId: string) {
+    const reason = window.prompt('Why are you reporting this message?')
+
+    if (!reason) return
+
+    try {
+      await api.reportChatMessage(messageId, reason)
+      setError('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not report message')
     }
   }
 
   return (
-    <section className="card wide chatPanel">
-      <div className="panelHeader">
-        <div>
-          <p className="eyebrow">Circle chat</p>
-          <h2>Group messages</h2>
-          <p className="mutedText">
-            Discuss payment proof, due dates, confirmations, and group rules with members of this circle.
-          </p>
-        </div>
-
-        <Link className="button secondary" to="/messages">All messages</Link>
-      </div>
-
+    <Card
+      wide
+      className="groupChatPanel"
+      eyebrow="Group chat"
+      title="Circle messages"
+      description="Use this chat for group coordination. Payment proof and confirmations should still be recorded in the ledger."
+      actions={<Badge tone="info">Members only</Badge>}
+    >
       {error && (
-        <p className={error.includes('reported') ? 'safeNote' : 'error'}>
-          {error}
-        </p>
+        <ActionBanner
+          tone="danger"
+          title="Group chat unavailable"
+          description={error}
+          icon="!"
+        />
       )}
 
-      <div className="chatSafetyNote">
-        Rota does not hold or transfer money. Never send money outside an agreed group cycle.
-      </div>
+      {loading ? (
+        <Skeleton variant="card" />
+      ) : (
+        <>
+          <div className="groupChatMessages">
+            {messages.length === 0 ? (
+              <EmptyState
+                icon="✉"
+                title="No group messages yet"
+                description="Send the first update to your circle."
+              />
+            ) : (
+              messages.map(message => (
+                <article key={message.id} className="groupChatMessage">
+                  <div>
+                    <strong>{message.sender_name || message.sender_email || 'Member'}</strong>
+                    <small>{new Date(message.created_at).toLocaleString()}</small>
+                  </div>
 
-      <div className="chatMessages">
-        {messages.length === 0 ? (
-          <p className="mutedText">No messages yet. Start the group conversation.</p>
-        ) : messages.map(message => (
-          <div key={message.id} className={message.mine ? 'chatBubble mine' : 'chatBubble'}>
-            <div>
-              <strong>{message.sender_name}</strong>
-              <small>{message.created_at ? new Date(message.created_at).toLocaleString() : ''}</small>
-            </div>
+                  <p>{message.deleted_at ? 'This message was deleted.' : message.body}</p>
 
-            <p>{message.body}</p>
-
-            {!message.mine && (
-              <button className="ghost mini" type="button" onClick={() => report(message)}>
-                Report
-              </button>
+                  {!message.deleted_at && (
+                    <button type="button" onClick={() => reportMessage(message.id)}>
+                      Report
+                    </button>
+                  )}
+                </article>
+              ))
             )}
           </div>
-        ))}
 
-        <div ref={bottomRef} />
-      </div>
+          <form className="groupChatComposer" onSubmit={sendMessage}>
+            <input
+              value={body}
+              onChange={event => setBody(event.target.value)}
+              placeholder="Write a group message..."
+            />
 
-      <form className="chatComposer" onSubmit={send}>
-        <input
-          value={body}
-          onChange={event => setBody(event.target.value)}
-          placeholder="Write a group message..."
-          maxLength={2000}
-        />
-        <button className="button" type="submit" disabled={busy || !body.trim()}>
-          {busy ? 'Sending...' : 'Send'}
-        </button>
-      </form>
-    </section>
+            <Button type="submit" loading={sending} disabled={!body.trim()}>
+              Send
+            </Button>
+          </form>
+        </>
+      )}
+    </Card>
   )
 }

@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import type { User } from './api'
 import { platformApi } from './platformApi'
+import { messageReadApi } from './messageReadApi'
 import ThemeToggle from './ThemeToggle'
 import ProfileAvatar from './ProfileAvatar'
 import { broadcastProfilePictureUpdated, profilePictureApi } from './profilePictureApi'
@@ -19,6 +20,7 @@ function formatCount(count: number) {
 
 function MobileBadge({ count, tone = 'danger' }: { count: number; tone?: 'danger' | 'warning' | 'success' }) {
   const label = formatCount(count)
+
   if (!label) return null
 
   return <span className={`mobileNavBadge ${tone}`}>{label}</span>
@@ -43,7 +45,7 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [actionCount, setActionCount] = useState(0)
   const [highPriorityCount, setHighPriorityCount] = useState(0)
-  const [notificationCount, setNotificationCount] = useState(0)
+  const [messageUnreadCount, setMessageUnreadCount] = useState(0)
 
   const [busy, setBusy] = useState('')
   const [photoError, setPhotoError] = useState('')
@@ -51,37 +53,42 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
 
   async function loadBadges() {
     try {
-      const [actions, notifications] = await Promise.all([
+      const [actions, unreadMessages] = await Promise.all([
         platformApi.actionItems(),
-        platformApi.notifications(),
+        messageReadApi.unreadMessageCount(),
       ])
 
       setActionCount(actions.items.length)
       setHighPriorityCount(actions.items.filter(item => item.priority === 'high').length)
-      setNotificationCount(notifications.unread_count)
+      setMessageUnreadCount(unreadMessages)
     } catch {
       setActionCount(0)
       setHighPriorityCount(0)
-      setNotificationCount(0)
+      setMessageUnreadCount(0)
     }
   }
 
   useEffect(() => {
     loadBadges()
 
-    function onFocus() {
+    function refreshBadges() {
       loadBadges()
     }
 
-    window.addEventListener('focus', onFocus)
+    window.addEventListener('focus', refreshBadges)
+    window.addEventListener('rota:messages-read', refreshBadges)
+    window.addEventListener('rota:messages-changed', refreshBadges)
 
     return () => {
-      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('focus', refreshBadges)
+      window.removeEventListener('rota:messages-read', refreshBadges)
+      window.removeEventListener('rota:messages-changed', refreshBadges)
     }
   }, [])
 
   useEffect(() => {
     setMoreOpen(false)
+    loadBadges()
   }, [location.pathname])
 
   useEffect(() => {
@@ -100,12 +107,14 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
 
   async function uploadPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
+
     if (!file) return
 
     setPhotoError('')
     setPhotoMessage('')
 
     const validationError = validateProfileImage(file)
+
     if (validationError) {
       setPhotoError(validationError)
       event.target.value = ''
@@ -187,7 +196,7 @@ export default function MobileBottomNav({ user, onLogout }: Props) {
         <NavLink to="/messages" className={({ isActive }) => isActive ? 'active' : ''}>
           <span className="mobileNavIcon">✉</span>
           <span>Messages</span>
-          <MobileBadge count={notificationCount} tone="danger" />
+          <MobileBadge count={messageUnreadCount} tone="danger" />
         </NavLink>
 
         <button
