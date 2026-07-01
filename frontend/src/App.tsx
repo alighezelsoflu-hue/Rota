@@ -37,7 +37,8 @@ import OnboardingPage from './OnboardingPage'
 import PublicInvitePage from './PublicInvitePage'
 import AdminSafetyDashboard from './AdminSafetyDashboard'
 import GuestMobileAuthBar from './GuestMobileAuthBar'
-import { groupOperationsApi } from './groupOperationsApi'
+import InviteCodeJoinCard from './InviteCodeJoinCard'
+import DashboardQuickActions from './DashboardQuickActions'
 import CompactGroupHeader from './CompactGroupHeader'
 import GroupWorkspaceTabs from './GroupWorkspaceTabs'
 import type { GroupWorkspaceTabId } from './GroupWorkspaceTabs'
@@ -47,7 +48,6 @@ import GroupMembersTab from './GroupMembersTab'
 import GroupMessagesTab from './GroupMessagesTab'
 import GroupReviewsTab from './GroupReviewsTab'
 import GroupManageTab from './GroupManageTab'
-import InviteCodeJoinCard from './InviteCodeJoinCard'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -153,22 +153,39 @@ function Landing() {
             <RotaLogo size="large" />
           </div>
 
-          <p className="eyebrow">Coordination-only savings circles</p>
-          <h1>Build interest-free savings circles with people you trust.</h1>
+          <p className="eyebrow">0% interest trusted circles</p>
+          <h1>Instead of paying bank interest, build trusted circles that help each other.</h1>
           <p className="lead">
-            Rota helps ROSCA, tontine, susu, tanda, and jamiya groups coordinate contributions,
-            receive a lump sum in turn, and grow trusted decentralized circles — without holding your money.
+            Join one or more trusted groups, contribute directly, take turns receiving the lump sum,
+            and grow a stronger community through trust, responsibility, and transparent records.
           </p>
 
+          <div className="businessHeroMessage">
+            <div>
+              <strong>0% group interest</strong>
+              <span>Members support each other directly — not through bank-interest debt.</span>
+            </div>
+
+            <div>
+              <strong>Trust-based network</strong>
+              <span>Build reliable circles with family, friends, colleagues, and community members.</span>
+            </div>
+
+            <div>
+              <strong>Responsibility first</strong>
+              <span>Agreements, proof, confirmations, reviews, and audit logs keep the group accountable.</span>
+            </div>
+          </div>
+
           <div className="actions">
-            <ButtonLink to="/register">Create a group</ButtonLink>
+            <ButtonLink to="/register">Create account</ButtonLink>
             <ButtonLink to="/simulator" variant="secondary">Try simulator</ButtonLink>
           </div>
 
           <ActionBanner
             tone="success"
-            title="Rota does not hold money"
-            description="Your group charges no interest. No wallet, no deposits, no platform balance. Members pay each other directly."
+            title="Rota coordinates circles. Rota does not lend or hold money."
+            description="Members pay each other directly outside the app. Rota provides structure, trust signals, records, approvals, and group transparency."
             icon="0%"
           />
         </div>
@@ -176,10 +193,10 @@ function Landing() {
         <Card className="heroDemo">
           <div className="demoHeader">
             <div>
-              <p className="eyebrow">Current cycle</p>
+              <p className="eyebrow">Trusted circle example</p>
               <h3>Ali receives this month</h3>
             </div>
-            <Badge tone="success" dot>Live ledger</Badge>
+            <Badge tone="success" dot>0% group interest</Badge>
           </div>
 
           <div className="moneyLine">
@@ -211,25 +228,28 @@ function Landing() {
       <section id="how-it-works" className="sectionBlock">
         <div className="sectionIntro">
           <p className="eyebrow">How it works</p>
-          <h2>Simple enough for a family group. Clear enough for a community organizer.</h2>
+          <h2>A trusted alternative to paying interest.</h2>
+          <p className="mutedText">
+            Rota helps your group organize direct contributions, payout turns, proof,
+            confirmations, member reviews, and shared accountability.
+          </p>
         </div>
 
         <div className="featureGrid three">
           <Card compact>
             <article className="featureCard">
               <span className="icon">1</span>
-              <h3>Create your circle</h3>
-              <p>Set the contribution amount, currency, frequency, member limit, and payout order.</p>
+              <h3>Create or join a circle</h3>
+              <p>Start with people you trust, or request access to a group using an invite code or link.</p>
             </article>
           </Card>
 
           <Card compact>
             <article className="featureCard">
               <span className="icon">2</span>
-              <h3>Members pay directly</h3>
+              <h3>Members contribute directly</h3>
               <p>
-                Each cycle, members send money to the selected receiver using bank transfer,
-                mobile money, or cash.
+                Each cycle, members send money directly to the selected receiver using their own payment method.
               </p>
             </article>
           </Card>
@@ -237,9 +257,9 @@ function Landing() {
           <Card compact>
             <article className="featureCard">
               <span className="icon">3</span>
-              <h3>Proof is tracked</h3>
+              <h3>The group builds trust</h3>
               <p>
-                Members upload proof, receivers confirm receipt, and everyone sees the shared group ledger.
+                Proof, confirmations, reviews, responsibilities, and transparent records help the community stay accountable.
               </p>
             </article>
           </Card>
@@ -248,8 +268,8 @@ function Landing() {
 
       <section id="trust" className="trustPanel">
         <div>
-          <p className="eyebrow">Built for transparency</p>
-          <h2>Rota is the scorekeeper, not the bank.</h2>
+          <p className="eyebrow">Trust, responsibility, community</p>
+          <h2>Rota is the structure behind trusted financial cooperation.</h2>
           <p className="mutedText">
             Your group keeps control of the money flow. Rota keeps the records clear,
             visible, and easy to review.
@@ -257,36 +277,41 @@ function Landing() {
         </div>
 
         <div className="trustGrid">
-          <div><strong>Never holds money</strong><span>No wallet, no deposits, no platform balance.</span></div>
-          <div><strong>Payment proof</strong><span>Store references, notes, and screenshots.</span></div>
-          <div><strong>Receiver confirmation</strong><span>The receiver confirms what arrived.</span></div>
-          <div><strong>Shared ledger</strong><span>Members can see status and history.</span></div>
+          <div><strong>0% group interest</strong><span>No group interest charges and no platform wallet.</span></div>
+          <div><strong>Direct member payments</strong><span>Members pay the receiver outside the app.</span></div>
+          <div><strong>Proof and confirmations</strong><span>Payment records are visible to the group.</span></div>
+          <div><strong>Trust network</strong><span>Responsible members build stronger community reputation.</span></div>
         </div>
       </section>
 
       <section className="sectionBlock exampleSection">
         <div className="sectionIntro">
-          <p className="eyebrow">Example cycle</p>
-          <h2>10 members × €100 = €1,000 pot</h2>
-          <p className="mutedText">This month, Ali receives the pot.</p>
+          <p className="eyebrow">Example circle</p>
+          <h2>10 members × €100 = €1,000 community pot</h2>
+          <p className="mutedText">
+            One member receives the pot each cycle. The group continues until every member has received.
+          </p>
         </div>
 
         <div className="flowCards">
           <div>Members see: <strong>Pay €100 to Ali by 5 Jan</strong></div>
-          <div>They pay outside the app</div>
-          <div>They upload proof in Rota</div>
-          <div>Ali confirms receipt</div>
+          <div>They pay Ali directly outside Rota</div>
+          <div>They upload proof</div>
+          <div>Ali and the group confirm</div>
         </div>
       </section>
 
       <Card className="finalCta">
-        <p className="eyebrow">Start small</p>
-        <h2>Use Rota first with people who already trust each other.</h2>
-        <p>Invite your existing group, run one cycle, and check whether the ledger is clearer than paper or WhatsApp.</p>
+        <p className="eyebrow">Build community capital</p>
+        <h2>Start with people who already trust each other.</h2>
+        <p>
+          Create a circle, invite responsible members, coordinate direct contributions,
+          and build a stronger trust network over time.
+        </p>
 
         <div className="actions centered">
           <ButtonLink to="/register">Create account</ButtonLink>
-          <ButtonLink to="/simulator" variant="secondary">Try simulator</ButtonLink>
+          <ButtonLink to="/simulator" variant="secondary">Plan a circle</ButtonLink>
         </div>
       </Card>
     </div>
@@ -412,13 +437,99 @@ function Register({ onLogin }: { onLogin: () => Promise<void> }) {
   )
 }
 
+function GroupListSection({
+  groups,
+  loading,
+}: {
+  groups: Group[]
+  loading: boolean
+}) {
+  const activeGroups = groups.filter(group => group.status !== 'archived')
+  const archivedGroups = groups.filter(group => group.status === 'archived')
+
+  return (
+    <Card
+      className="dashboardGroupsSection"
+      wide
+      eyebrow="My Groups"
+      title="Your circles"
+      description="These are the groups you belong to. Open a group to see its workspace, payments, members, messages, and settings."
+      actions={<ButtonLink to="/groups/new" variant="secondary" size="sm">Create group</ButtonLink>}
+    >
+      {loading ? (
+        <Skeleton variant="card" />
+      ) : groups.length === 0 ? (
+        <EmptyState
+          icon="◎"
+          title="You are not in any group yet"
+          description="Create your first circle or use an invite code to request access to an existing one."
+          action={<ButtonLink to="/groups/new">Create your first group</ButtonLink>}
+        />
+      ) : (
+        <div className="professionalGroupList">
+          {activeGroups.map(group => (
+            <Link className="professionalGroupRow" key={group.id} to={`/groups/${group.id}`}>
+              <div className="professionalGroupIcon">
+                {group.name.slice(0, 1).toUpperCase()}
+              </div>
+
+              <div className="professionalGroupInfo">
+                <div>
+                  <strong>{group.name}</strong>
+                  <Badge status={group.status} />
+                </div>
+
+                <p>
+                  {group.contribution_amount} {group.currency} · {group.frequency} · {group.member_limit} members max
+                </p>
+              </div>
+
+              <div className="professionalGroupArrow">
+                Open
+              </div>
+            </Link>
+          ))}
+
+          {archivedGroups.length > 0 && (
+            <details className="archivedGroupDetails">
+              <summary>{archivedGroups.length} archived group{archivedGroups.length === 1 ? '' : 's'}</summary>
+
+              <div className="professionalGroupList archived">
+                {archivedGroups.map(group => (
+                  <Link className="professionalGroupRow" key={group.id} to={`/groups/${group.id}`}>
+                    <div className="professionalGroupIcon muted">
+                      {group.name.slice(0, 1).toUpperCase()}
+                    </div>
+
+                    <div className="professionalGroupInfo">
+                      <div>
+                        <strong>{group.name}</strong>
+                        <Badge status={group.status} />
+                      </div>
+
+                      <p>
+                        {group.contribution_amount} {group.currency} · {group.frequency}
+                      </p>
+                    </div>
+
+                    <div className="professionalGroupArrow">
+                      View
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </details>
+          )}
+        </div>
+      )}
+    </Card>
+  )
+}
+
 function Dashboard({ user }: { user: User }) {
   const [groups, setGroups] = useState<Group[]>([])
-  const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState('')
-  const [joinMessage, setJoinMessage] = useState('')
   const [loadingGroups, setLoadingGroups] = useState(true)
-  const navigate = useNavigate()
 
   async function load() {
     setLoadingGroups(true)
@@ -437,35 +548,16 @@ function Dashboard({ user }: { user: User }) {
     load()
   }, [])
 
-  async function join(event: FormEvent) {
-    event.preventDefault()
-    setError('')
-    setJoinMessage('')
-
-    try {
-      const result = await groupOperationsApi.joinByInvite(inviteCode)
-
-      if (result.status === 'approval_required') {
-        setJoinMessage('Your join request was sent for approval.')
-        return
-      }
-
-      navigate(`/groups/${result.group.id}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not join group')
-    }
-  }
-
   const openGroups = groups.filter(group => group.status !== 'archived')
   const reviewGroups = groups.filter(group => ['cycle_review', 'pending', 'forming'].includes(group.status))
 
   return (
-    <div className="dashboardLayout">
+    <div className="professionalDashboard">
       <PageHeader
-        className="wide"
+        className="wide compactDashboardHeader"
         eyebrow="My Groups"
         title={`Welcome, ${user.name}`}
-        description="See your circles, action items, messages, discovery requests, and trust network."
+        description="Open your circles first. Join or create new circles when you are ready."
         meta={
           <>
             <Badge status={user.verification_status} dot />
@@ -475,13 +567,10 @@ function Dashboard({ user }: { user: User }) {
         actions={
           <>
             <ButtonLink to="/actions" variant="secondary">Actions</ButtonLink>
-            <ButtonLink to="/messages" variant="secondary">Messages</ButtonLink>
             <ButtonLink to="/groups/new">Create group</ButtonLink>
           </>
         }
       />
-
-      <TodayPreview />
 
       {error && (
         <ActionBanner
@@ -493,103 +582,39 @@ function Dashboard({ user }: { user: User }) {
         />
       )}
 
-      {joinMessage && (
-        <ActionBanner
-          className="wide"
-          tone="success"
-          title="Request sent"
-          description={joinMessage}
-          icon="✓"
-        />
-      )}
-
-      <section className="statsGrid wide">
-        <StatCard label="Your groups" value={groups.length} icon="◎" tone="info" />
-        <StatCard label="Active circles" value={openGroups.length} icon="↗" tone="success" />
-        <StatCard label="Trust score" value={user.trust_score} icon="★" tone="success" />
-        <StatCard label="Money held by Rota" value="€0" icon="0%" tone="neutral" />
-      </section>
-
-      {reviewGroups.length > 0 ? (
+      {reviewGroups.length > 0 && (
         <ActionBanner
           className="wide"
           tone="warning"
-          title="Some circles may need attention"
+          title="Some circles need attention"
           description={`${reviewGroups.length} group${reviewGroups.length === 1 ? '' : 's'} are forming, pending, or in cycle review.`}
           action={<ButtonLink to="/actions" variant="secondary" size="sm">Review actions</ButtonLink>}
           icon="!"
         />
-      ) : (
-        <ActionBanner
-          className="wide"
-          tone="success"
-          title="No urgent group actions"
-          description="Your dashboard is clear. Open a group to review its workspace."
-          action={<ButtonLink to="/discover" variant="secondary" size="sm">Discover circles</ButtonLink>}
-          icon="✓"
-        />
       )}
 
-      <ProductPrinciples compact />
+      <section className="dashboardPriorityLayout">
+        <div className="dashboardPrimaryStack">
+          <GroupListSection groups={groups} loading={loadingGroups} />
+          <InviteCodeJoinCard />
+          <DashboardQuickActions />
+        </div>
 
-      <Card
-        className="mainPanel"
-        eyebrow="Your circles"
-        title="My Groups"
-        actions={<ButtonLink to="/groups/new" variant="secondary" size="sm">New group</ButtonLink>}
-      >
-        {loadingGroups ? (
-          <Skeleton variant="card" />
-        ) : groups.length === 0 ? (
-          <EmptyState
-            title="No groups yet"
-            description="Create your first circle or join an existing one with an invite code."
-            action={<ButtonLink to="/groups/new">Create your first group</ButtonLink>}
-          />
-        ) : (
-          <div className="groupCards">
-            {groups.map(group => (
-              <Link className="groupCard" key={group.id} to={`/groups/${group.id}`}>
-                <div className="groupTopline">
-                  <strong>{group.name}</strong>
-                  <Badge status={group.status} />
-                </div>
+        <aside className="dashboardContextStack">
+          <TodayPreview />
 
-                <div className="groupMeta">
-                  <span>{group.contribution_amount} {group.currency}</span>
-                  <span>{group.frequency}</span>
-                  <span>{group.member_limit} members max</span>
-                </div>
+          <Card eyebrow="Summary" title="Your Rota">
+            <div className="compactDashboardStats">
+              <StatCard label="Groups" value={groups.length} icon="◎" tone="info" />
+              <StatCard label="Active" value={openGroups.length} icon="↗" tone="success" />
+              <StatCard label="Trust" value={user.trust_score} icon="★" tone="success" />
+              <StatCard label="Held by Rota" value="€0" icon="0%" tone="neutral" />
+            </div>
+          </Card>
 
-                <div className="invitePill">Invite code: <strong>{group.invite_code}</strong></div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      <aside className="sideStack">
-        <InviteCodeJoinCard />
-        <Card eyebrow="Trusted Messages" title="Chat with groups and accepted connections.">
-          <p>Use group chat for circle coordination, and private chat after a connection request is accepted.</p>
-          <ButtonLink full variant="secondary" to="/messages">Open messages</ButtonLink>
-        </Card>
-
-        <Card eyebrow="Community Discovery" title="Find people open to trusted circles.">
-          <p>Opt in to discovery, find nearby people or groups, send requests, and build new circles carefully.</p>
-          <ButtonLink full variant="secondary" to="/discover">Open discovery</ButtonLink>
-        </Card>
-
-        <Card eyebrow="Circle Simulator" title="Calculate before you create.">
-          <p>Simulate how many people you need, how much each person contributes, and how much each cycle creates.</p>
-          <ButtonLink full variant="secondary" to="/simulator">Try simulator</ButtonLink>
-        </Card>
-
-        <Card eyebrow="Trust Network Map" title="See trusted people and paths.">
-          <p>Open the Trust Network Map to inspect group health, trusted members, and relationship signals.</p>
-          <ButtonLink full variant="secondary" to="/network">View Trust Network Map</ButtonLink>
-        </Card>
-      </aside>
+          <ProductPrinciples compact />
+        </aside>
+      </section>
     </div>
   )
 }

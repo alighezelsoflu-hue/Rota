@@ -10,11 +10,11 @@ export default function ProductPrinciples({ compact = false }: Props) {
       <article className="principleCard interestFree">
         <span className="principleIcon">0%</span>
         <div>
-          <p className="eyebrow">Interest-free</p>
-          <h3>Your group charges no interest.</h3>
+          <p className="eyebrow">Bank-interest alternative</p>
+          <h3>Instead of paying bank interest, use trusted 0% interest circles.</h3>
           <p>
-            Rota helps your group coordinate contributions directly. No bank loan,
-            no group interest, no platform wallet.
+            Rota helps members coordinate direct contributions and take turns receiving a lump sum.
+            Your group charges no interest, and Rota does not hold or lend money.
           </p>
         </div>
       </article>
@@ -22,11 +22,11 @@ export default function ProductPrinciples({ compact = false }: Props) {
       <article className="principleCard decentralised">
         <span className="principleIcon">◎</span>
         <div>
-          <p className="eyebrow">Decentralized circles</p>
-          <h3>You are not dependent on one bank or one organizer.</h3>
+          <p className="eyebrow">Trusted groups</p>
+          <h3>Join one or more groups with people you trust.</h3>
           <p>
-            Build many small trusted circles with family, friends, colleagues, and
-            community members.
+            Build circles with family, friends, colleagues, and community members.
+            Trust, responsibility, and clear records make every circle stronger.
           </p>
         </div>
       </article>
@@ -34,17 +34,13 @@ export default function ProductPrinciples({ compact = false }: Props) {
       <article className="principleCard networkGrowth">
         <span className="principleIcon">↗</span>
         <div>
-          <p className="eyebrow">Network growth</p>
+          <p className="eyebrow">Community strength</p>
           <h3>The stronger your trusted network, the more useful Rota becomes.</h3>
           <p>
-            More trusted circles mean more visibility, stronger social proof, and
-            better group opportunities.
+            More trusted circles mean better visibility, stronger social proof,
+            member reviews, and more opportunities to join reliable groups.
           </p>
-          {!compact && (
-            <Link className="inlineLink" to="/network">
-              Explore your Trust Network →
-            </Link>
-          )}
+          {!compact && <Link className="inlineLink" to="/network">Explore your Trust Network Map →</Link>}
         </div>
       </article>
     </section>
