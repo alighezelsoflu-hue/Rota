@@ -515,9 +515,10 @@ def member_responsibilities(
 ):
     require_group_member(db, group_id, current_user.id)
     group_or_404(db, group_id)
+
     cycle = latest_cycle(db, group_id)
 
-    rows = db.execute(
+    members = db.execute(
         text(
             """
             SELECT
@@ -526,40 +527,12 @@ def member_responsibilities(
               gm.role,
               COALESCE(gm.status, 'active') AS member_status,
               gm.agreement_accepted_at,
-              gm.has_received_payout,
+              COALESCE(gm.has_received_payout, FALSE) AS has_received_payout,
               u.name,
               u.email,
-              COALESCE(u.trust_score, 0) AS trust_score,
-              c.id AS contribution_id,
-              c.amount,
-              c.status AS contribution_status,
-              c.payment_reference,
-              c.proof_url,
-              c.updated_at AS contribution_updated_at,
-              CASE
-                WHEN c.status = 'pending' AND cy.due_date < NOW() THEN TRUE
-                ELSE FALSE
-              END AS is_late_candidate,
-              CASE
-                WHEN dc.id IS NOT NULL AND dc.status IN ('open', 'under_review') THEN TRUE
-                ELSE FALSE
-              END AS has_open_dispute,
-              CASE
-                WHEN lpc.id IS NOT NULL AND lpc.status = 'open' THEN TRUE
-                ELSE FALSE
-              END AS has_open_late_case
+              COALESCE(u.trust_score, 0) AS trust_score
             FROM group_members gm
             JOIN users u ON u.id = gm.user_id
-            LEFT JOIN cycles cy ON cy.id = :cycle_id
-            LEFT JOIN contributions c
-              ON c.cycle_id = :cycle_id
-             AND c.payer_user_id = gm.user_id
-            LEFT JOIN dispute_cases dc
-              ON dc.contribution_id = c.id
-             AND dc.status IN ('open', 'under_review')
-            LEFT JOIN late_payment_cases lpc
-              ON lpc.contribution_id = c.id
-             AND lpc.status = 'open'
             WHERE gm.group_id = :group_id
               AND COALESCE(gm.status, 'active') != 'removed_before_start'
             ORDER BY
@@ -571,14 +544,133 @@ def member_responsibilities(
               u.name ASC
             """
         ),
-        {"group_id": group_id, "cycle_id": cycle["id"] if cycle else None},
+        {"group_id": group_id},
     ).mappings().all()
+
+    contribution_by_payer: dict[str, dict[str, Any]] = {}
+
+    if cycle:
+        contributions = db.execute(
+            text(
+                """
+                SELECT
+                  c.id,
+                  c.payer_user_id,
+                  c.amount,
+                  c.status,
+                  c.payment_reference,
+                  c.proof_url,
+                  c.updated_at,
+                  cy.due_date
+                FROM contributions c
+                JOIN cycles cy ON cy.id = c.cycle_id
+                WHERE c.cycle_id = :cycle_id
+                """
+            ),
+            {"cycle_id": cycle["id"]},
+        ).mappings().all()
+
+        contribution_by_payer = {
+            row["payer_user_id"]: dict(row)
+            for row in contributions
+        }
+
+    open_dispute_contribution_ids: set[str] = set()
+
+    if table_exists(db, "dispute_cases"):
+        dispute_rows = db.execute(
+            text(
+                """
+                SELECT contribution_id
+                FROM dispute_cases
+                WHERE group_id = :group_id
+                  AND status IN ('open', 'under_review')
+                """
+            ),
+            {"group_id": group_id},
+        ).mappings().all()
+
+        open_dispute_contribution_ids = {
+            row["contribution_id"]
+            for row in dispute_rows
+            if row["contribution_id"]
+        }
+
+    open_late_contribution_ids: set[str] = set()
+
+    if table_exists(db, "late_payment_cases"):
+        late_rows = db.execute(
+            text(
+                """
+                SELECT contribution_id
+                FROM late_payment_cases
+                WHERE group_id = :group_id
+                  AND status = 'open'
+                """
+            ),
+            {"group_id": group_id},
+        ).mappings().all()
+
+        open_late_contribution_ids = {
+            row["contribution_id"]
+            for row in late_rows
+            if row["contribution_id"]
+        }
+
+    member_rows: list[dict[str, Any]] = []
+
+    now = datetime.now(timezone.utc)
+
+    for member in members:
+        item = dict(member)
+        contribution = contribution_by_payer.get(member["user_id"])
+
+        if contribution:
+            due_date = contribution.get("due_date")
+
+            if due_date and due_date.tzinfo is None:
+                due_date = due_date.replace(tzinfo=timezone.utc)
+
+            is_late_candidate = (
+                contribution["status"] == "pending"
+                and due_date is not None
+                and due_date < now
+            )
+
+            item.update(
+                {
+                    "contribution_id": contribution["id"],
+                    "amount": contribution["amount"],
+                    "contribution_status": contribution["status"],
+                    "payment_reference": contribution["payment_reference"],
+                    "proof_url": contribution["proof_url"],
+                    "contribution_updated_at": contribution["updated_at"],
+                    "is_late_candidate": is_late_candidate,
+                    "has_open_dispute": contribution["id"] in open_dispute_contribution_ids,
+                    "has_open_late_case": contribution["id"] in open_late_contribution_ids,
+                }
+            )
+        else:
+            item.update(
+                {
+                    "contribution_id": None,
+                    "amount": None,
+                    "contribution_status": None,
+                    "payment_reference": None,
+                    "proof_url": None,
+                    "contribution_updated_at": None,
+                    "is_late_candidate": False,
+                    "has_open_dispute": False,
+                    "has_open_late_case": False,
+                }
+            )
+
+        member_rows.append(item)
 
     return {
         "current_cycle": dict(cycle) if cycle else None,
-        "members": [dict(row) for row in rows],
+        "members": member_rows,
     }
-
 
 @router.get("/groups/{group_id}/operations/schedule")
 def payment_schedule(
