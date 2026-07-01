@@ -54,7 +54,7 @@ app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads"
 app.include_router(governance_router)
 app.include_router(discovery_router)
 app.include_router(chat_router)
-
+app.include_router(platform_router)
 
 DEFAULT_CIRCLE_AGREEMENT = """Circle Commitment
 
