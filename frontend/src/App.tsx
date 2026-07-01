@@ -48,6 +48,13 @@ import GroupShareInvite from './GroupShareInvite'
 import CycleReviewPrompt from './CycleReviewPrompt'
 import PublicInvitePage from './PublicInvitePage'
 import AdminSafetyDashboard from './AdminSafetyDashboard'
+import GroupCommandCenter from './GroupCommandCenter'
+import MemberResponsibilityTracker from './MemberResponsibilityTracker'
+import PaymentScheduleCalendar from './PaymentScheduleCalendar'
+import LatePaymentPanel from './LatePaymentPanel'
+import GroupAnnouncementsPanel from './GroupAnnouncementsPanel'
+import GroupSettingsPanel from './GroupSettingsPanel'
+import { groupOperationsApi } from './groupOperationsApi'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -415,6 +422,7 @@ function Dashboard({ user }: { user: User }) {
   const [groups, setGroups] = useState<Group[]>([])
   const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState('')
+  const [joinMessage, setJoinMessage] = useState('')
   const [loadingGroups, setLoadingGroups] = useState(true)
   const navigate = useNavigate()
 
@@ -438,10 +446,17 @@ function Dashboard({ user }: { user: User }) {
   async function join(e: FormEvent) {
     e.preventDefault()
     setError('')
+    setJoinMessage('')
 
     try {
-      const group = await api.joinGroup(inviteCode)
-      navigate(`/groups/${group.id}`)
+      const result = await groupOperationsApi.joinByInvite(inviteCode)
+
+      if (result.status === 'approval_required') {
+        setJoinMessage('Your join request was sent to the organizer for approval.')
+        return
+      }
+
+      navigate(`/groups/${result.group.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not join group')
     }
@@ -481,6 +496,16 @@ function Dashboard({ user }: { user: User }) {
           title="Something went wrong"
           description={error}
           icon="!"
+        />
+      )}
+
+      {joinMessage && (
+        <ActionBanner
+          className="wide"
+          tone="success"
+          title="Request sent"
+          description={joinMessage}
+          icon="✓"
         />
       )}
 
@@ -788,6 +813,8 @@ function GroupPage({ user }: { user: User }) {
         icon="0%"
       />
 
+      <GroupCommandCenter groupId={detail.group.id} />
+
       <section className="statsGrid">
         <StatCard
           label="Expected pot"
@@ -817,6 +844,11 @@ function GroupPage({ user }: { user: User }) {
 
       <GroupHealthPanel groupId={detail.group.id} />
 
+      <GroupAnnouncementsPanel
+        groupId={detail.group.id}
+        isOrganizer={isOrganizer}
+      />
+
       <GroupShareInvite
         inviteCode={detail.group.invite_code}
         groupName={detail.group.name}
@@ -825,6 +857,11 @@ function GroupPage({ user }: { user: User }) {
       <GroupExportActions
         groupId={detail.group.id}
         groupName={detail.group.name}
+      />
+
+      <GroupSettingsPanel
+        groupId={detail.group.id}
+        isOrganizer={isOrganizer}
       />
 
       <GroupGovernancePanel
@@ -839,7 +876,21 @@ function GroupPage({ user }: { user: User }) {
         onChanged={load}
       />
 
+      <LatePaymentPanel
+        groupId={detail.group.id}
+        currentUserId={user.id}
+        isOrganizer={isOrganizer}
+        onChanged={load}
+      />
+
       <CycleReviewPrompt groupId={detail.group.id} />
+
+      <MemberResponsibilityTracker
+        groupId={detail.group.id}
+        onChanged={load}
+      />
+
+      <PaymentScheduleCalendar groupId={detail.group.id} />
 
       <CircleCalculator detail={detail} currentUserId={user.id} />
 

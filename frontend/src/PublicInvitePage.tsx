@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { api, getToken } from './api'
+import { getToken } from './api'
 import { ActionBanner, Badge, Button, ButtonLink, Card, EmptyState, PageHeader, Skeleton, StatCard } from './ui'
 import { communityGrowthApi } from './communityGrowthApi'
 import type { PublicGroupInvite } from './communityGrowthApi'
 import ProductPrinciples from './ProductPrinciples'
+import { groupOperationsApi } from './groupOperationsApi'
 
 export default function PublicInvitePage() {
   const { inviteCode } = useParams()
@@ -50,9 +51,15 @@ export default function PublicInvitePage() {
     setMessage('')
 
     try {
-      const group = await api.joinGroup(inviteCode)
+      const result = await groupOperationsApi.joinByInvite(inviteCode)
+
+      if (result.status === 'approval_required') {
+        setMessage('Your request was sent to the organizer for approval.')
+        return
+      }
+
       setMessage('You joined the group.')
-      navigate(`/groups/${group.id}`)
+      navigate(`/groups/${result.group.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not join group')
     } finally {
@@ -102,7 +109,7 @@ export default function PublicInvitePage() {
         actions={
           <>
             <Button type="button" onClick={joinGroup} loading={joining}>
-              {isLoggedIn ? 'Join group' : 'Create account to join'}
+              {isLoggedIn ? 'Join or request access' : 'Create account to join'}
             </Button>
             <Button type="button" variant="secondary" onClick={copyInvite}>
               Copy invite

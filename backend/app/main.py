@@ -20,6 +20,7 @@ from .exports_disputes import router as exports_disputes_router
 from .community_growth import router as community_growth_router
 from .admin_safety import router as admin_safety_router
 from .profile_pictures import router as profile_pictures_router
+from .group_operations import router as group_operations_router
 from .models import AuditLog, Contribution, Cycle, Dispute, Group, GroupMember, User
 from .schemas import (
     AuditLogOut,
@@ -64,6 +65,7 @@ app.include_router(exports_disputes_router)
 app.include_router(community_growth_router)
 app.include_router(admin_safety_router)
 app.include_router(profile_pictures_router)
+app.include_router(group_operations_router)
 
 DEFAULT_CIRCLE_AGREEMENT = """Circle Commitment
 
