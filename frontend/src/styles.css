@@ -7324,3 +7324,144 @@ body[data-theme='dark'],
 :root[data-theme='dark'] .mobileBottomNav a.active {
   background: rgba(34, 197, 94, 0.14);
 }
+/* -------------------------------------------------------
+   Exports and structured disputes
+------------------------------------------------------- */
+
+.groupExportActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ledgerActionStack {
+  display: grid;
+  gap: 8px;
+  align-items: start;
+}
+
+.structuredDisputeForm textarea {
+  min-height: 110px;
+}
+
+.disputeCaseList {
+  display: grid;
+  gap: 14px;
+}
+
+.disputeCaseCard {
+  border-radius: 26px;
+  padding: 18px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+  display: grid;
+  gap: 14px;
+}
+
+.disputeCaseTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.disputeCaseTop > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.disputeCaseTop small {
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.disputeCaseBody {
+  display: grid;
+  gap: 8px;
+}
+
+.disputeCaseBody h3 {
+  margin: 0;
+  color: var(--ui-text, #0f172a);
+}
+
+.disputeCaseBody p {
+  margin: 0;
+  color: var(--ui-muted, #64748b);
+  line-height: 1.55;
+}
+
+.disputeEvidence,
+.disputeResolution {
+  border-radius: 18px;
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.disputeEvidence {
+  background: var(--ui-warning-soft, #ffedd5);
+  color: #9a3412;
+}
+
+.disputeResolution {
+  background: var(--ui-primary-soft, #dcfce7);
+  color: #166534;
+}
+
+.disputeEvidence strong,
+.disputeResolution strong,
+.disputeEvidence span,
+.disputeResolution span {
+  display: block;
+}
+
+.disputeEvidence span,
+.disputeResolution span {
+  line-height: 1.5;
+}
+
+.disputeCaseActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 760px) {
+  .groupExportActions,
+  .disputeCaseActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .disputeCaseTop {
+    display: grid;
+  }
+
+  .disputeCaseTop small {
+    white-space: normal;
+  }
+}
+
+:root[data-theme='dark'] .disputeCaseCard,
+:root[data-theme='dark'] .disputeEvidence,
+:root[data-theme='dark'] .disputeResolution {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .disputeCaseBody h3 {
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] .disputeEvidence {
+  color: #fdba74;
+}
+
+:root[data-theme='dark'] .disputeResolution {
+  color: #86efac;
+}

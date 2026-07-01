@@ -15,6 +15,7 @@ from .database import Base, engine, get_db, settings
 from .governance import router as governance_router
 from .discovery import router as discovery_router
 from .platform import router as platform_router
+from .exports_disputes import router as exports_disputes_router
 from .models import AuditLog, Contribution, Cycle, Dispute, Group, GroupMember, User
 from .schemas import (
     AuditLogOut,
@@ -55,6 +56,7 @@ app.include_router(governance_router)
 app.include_router(discovery_router)
 app.include_router(chat_router)
 app.include_router(platform_router)
+app.include_router(exports_disputes_router)
 
 DEFAULT_CIRCLE_AGREEMENT = """Circle Commitment
 

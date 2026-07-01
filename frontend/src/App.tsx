@@ -41,6 +41,9 @@ import MobileBottomNav from './MobileBottomNav'
 import ProfileMenu from './ProfileMenu'
 import TodayPreview from './TodayPreview'
 import OnboardingPage from './OnboardingPage'
+import GroupExportActions from './GroupExportActions'
+import DisputeCasePanel from './DisputeCasePanel'
+import StructuredDisputeActions from './StructuredDisputeActions'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -808,7 +811,18 @@ function GroupPage({ user }: { user: User }) {
 
       <GroupHealthPanel groupId={detail.group.id} />
 
+      <GroupExportActions
+        groupId={detail.group.id}
+        groupName={detail.group.name}
+      />
+
       <GroupGovernancePanel
+        groupId={detail.group.id}
+        isOrganizer={isOrganizer}
+        onChanged={load}
+      />
+
+      <DisputeCasePanel
         groupId={detail.group.id}
         isOrganizer={isOrganizer}
         onChanged={load}
@@ -908,11 +922,18 @@ function GroupPage({ user }: { user: User }) {
             contributions={currentContributions}
             currency={detail.group.currency}
             actions={c => (
-              <ReceiptReviewActions
-                contribution={c}
-                currentUserId={user.id}
-                onSaved={load}
-              />
+              <div className="ledgerActionStack">
+                <ReceiptReviewActions
+                  contribution={c}
+                  currentUserId={user.id}
+                  onSaved={load}
+                />
+
+                <StructuredDisputeActions
+                  contribution={c}
+                  onSaved={load}
+                />
+              </div>
             )}
           />
         )}
