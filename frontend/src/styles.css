@@ -7465,3 +7465,212 @@ body[data-theme='dark'],
 :root[data-theme='dark'] .disputeResolution {
   color: #86efac;
 }
+/* -------------------------------------------------------
+   Community growth and admin safety
+------------------------------------------------------- */
+
+.publicInvitePage,
+.adminSafetyPage {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 90px;
+  display: grid;
+  gap: 20px;
+}
+
+.publicInviteGrid,
+.adminSafetyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.publicInviteDetails {
+  display: grid;
+  gap: 12px;
+}
+
+.publicInviteDetails div {
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+  display: grid;
+  gap: 4px;
+}
+
+.publicInviteDetails span {
+  color: var(--ui-muted, #64748b);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.publicInviteDetails strong {
+  color: var(--ui-text, #0f172a);
+}
+
+.publicInviteSignup {
+  text-align: center;
+}
+
+.publicInviteSignup h2 {
+  margin-top: 0;
+}
+
+.publicInviteFooter {
+  text-align: center;
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+}
+
+.shareInviteBox {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.shareInviteBox div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.shareInviteBox span {
+  color: var(--ui-muted, #64748b);
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.shareInviteBox strong {
+  color: var(--ui-text, #0f172a);
+  word-break: break-all;
+}
+
+.reviewPromptGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.reviewPromptMember {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.reviewPromptMember > span {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--ui-primary, #16a34a), #2563eb);
+  color: white;
+  font-weight: 950;
+}
+
+.reviewPromptMember strong,
+.reviewPromptMember small {
+  display: block;
+}
+
+.reviewPromptMember strong {
+  color: var(--ui-text, #0f172a);
+}
+
+.reviewPromptMember small {
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.adminReportList {
+  display: grid;
+  gap: 12px;
+}
+
+.adminReportCard {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 22px;
+  background: var(--ui-surface-soft, #f8fafc);
+  border: 1px solid var(--ui-border, rgba(15, 23, 42, 0.09));
+}
+
+.adminReportCard div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.adminReportCard small,
+.adminReportCard span {
+  color: var(--ui-muted, #64748b);
+  font-weight: 800;
+}
+
+.adminReportCard strong {
+  color: var(--ui-text, #0f172a);
+}
+
+.adminReportCard p {
+  margin: 0;
+  color: var(--ui-muted-strong, #475569);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .publicInviteGrid,
+  .adminSafetyGrid,
+  .reviewPromptGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .shareInviteBox {
+    grid-template-columns: 1fr;
+  }
+
+  .publicInvitePage,
+  .adminSafetyPage {
+    width: min(100%, calc(100% - 20px));
+    padding-bottom: 110px;
+  }
+}
+
+@media (max-width: 640px) {
+  .reviewPromptMember {
+    grid-template-columns: auto 1fr;
+  }
+
+  .reviewPromptMember a {
+    grid-column: 1 / -1;
+  }
+}
+
+:root[data-theme='dark'] .publicInviteDetails div,
+:root[data-theme='dark'] .shareInviteBox,
+:root[data-theme='dark'] .reviewPromptMember,
+:root[data-theme='dark'] .adminReportCard {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .publicInviteDetails strong,
+:root[data-theme='dark'] .shareInviteBox strong,
+:root[data-theme='dark'] .reviewPromptMember strong,
+:root[data-theme='dark'] .adminReportCard strong {
+  color: #f8fafc;
+}

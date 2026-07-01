@@ -44,6 +44,10 @@ import OnboardingPage from './OnboardingPage'
 import GroupExportActions from './GroupExportActions'
 import DisputeCasePanel from './DisputeCasePanel'
 import StructuredDisputeActions from './StructuredDisputeActions'
+import GroupShareInvite from './GroupShareInvite'
+import CycleReviewPrompt from './CycleReviewPrompt'
+import PublicInvitePage from './PublicInvitePage'
+import AdminSafetyDashboard from './AdminSafetyDashboard'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -769,6 +773,7 @@ function GroupPage({ user }: { user: User }) {
         }
         actions={
           <>
+            <ButtonLink to={`/g/${detail.group.invite_code}`} variant="secondary">Public invite</ButtonLink>
             <ButtonLink to="/messages" variant="secondary">Messages</ButtonLink>
             <ButtonLink to="/dashboard" variant="ghost">Dashboard</ButtonLink>
           </>
@@ -811,6 +816,11 @@ function GroupPage({ user }: { user: User }) {
 
       <GroupHealthPanel groupId={detail.group.id} />
 
+      <GroupShareInvite
+        inviteCode={detail.group.invite_code}
+        groupName={detail.group.name}
+      />
+
       <GroupExportActions
         groupId={detail.group.id}
         groupName={detail.group.name}
@@ -827,6 +837,8 @@ function GroupPage({ user }: { user: User }) {
         isOrganizer={isOrganizer}
         onChanged={load}
       />
+
+      <CycleReviewPrompt groupId={detail.group.id} />
 
       <CircleCalculator detail={detail} currentUserId={user.id} />
 
@@ -899,7 +911,9 @@ function GroupPage({ user }: { user: User }) {
         </Card>
       </section>
 
-      <MemberReviewPanel detail={detail} currentUserId={user.id} />
+      <div id="member-review-panel">
+        <MemberReviewPanel detail={detail} currentUserId={user.id} />
+      </div>
 
       <GroupChatPanel groupId={detail.group.id} />
 
@@ -1169,6 +1183,7 @@ export default function App() {
         <Route path="/login" element={<Login onLogin={auth.refresh} />} />
         <Route path="/register" element={<Register onLogin={auth.refresh} />} />
         <Route path="/simulator" element={<LiveCircleSimulator />} />
+        <Route path="/g/:inviteCode" element={<PublicInvitePage />} />
 
         <Route
           path="/onboarding"
@@ -1265,6 +1280,15 @@ export default function App() {
           element={
             <RequireAuth user={auth.user} loading={auth.loading}>
               <ReviewsPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/admin/safety"
+          element={
+            <RequireAuth user={auth.user} loading={auth.loading}>
+              <AdminSafetyDashboard />
             </RequireAuth>
           }
         />
