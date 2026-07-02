@@ -48,6 +48,7 @@ import GroupMembersTab from './GroupMembersTab'
 import GroupMessagesTab from './GroupMessagesTab'
 import GroupReviewsTab from './GroupReviewsTab'
 import GroupManageTab from './GroupManageTab'
+import HeroCycleDemo from './HeroCycleDemo'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -94,7 +95,7 @@ function Shell({
 
       <header className="topbar">
         <Link to="/" className="brand animatedBrand" aria-label="Rota home">
-          <RotaLogo />
+          <RotaLogo showTagline={false} />
         </Link>
 
         <nav className="desktopNav">
@@ -155,7 +156,7 @@ function Landing() {
             <RotaLogo size="large" />
           </div>
 
-          <p className="eyebrow">0% interest trusted circles</p>
+          <p className="heroTrustLine">Trusted groups · direct contributions · clear records</p>
           <h1>Build trusted circles instead of paying bank interest.</h1>
           <p className="lead">
             Join one or more trusted groups, contribute directly, take turns receiving the lump sum,
@@ -191,38 +192,7 @@ function Landing() {
             icon="0%"
           />
         </div>
-
-        <Card className="heroDemo premiumPanel">
-          <div className="demoHeader">
-            <div>
-              <p className="eyebrow">Circle example</p>
-              <h3>Ali receives this month</h3>
-            </div>
-            <Badge tone="success" dot>0% interest</Badge>
-          </div>
-
-          <div className="moneyLine">
-            <div>
-              <span className="muted">Expected pot</span>
-              <strong>€1,000</strong>
-            </div>
-            <div>
-              <span className="muted">Confirmed</span>
-              <strong>€800</strong>
-            </div>
-          </div>
-
-          <div className="progress">
-            <span style={{ width: '80%' }} />
-          </div>
-
-          <div className="miniLedger">
-            <div><span className="dot ok" />David uploaded proof <strong>Confirmed</strong></div>
-            <div><span className="dot ok" />Sara paid by transfer <strong>Confirmed</strong></div>
-            <div><span className="dot wait" />Omar uploaded proof <strong>Waiting</strong></div>
-            <div><span className="dot late" />Lina has not paid <strong>Pending</strong></div>
-          </div>
-        </Card>
+        <HeroCycleDemo />
       </section>
 
       <ProductPrinciples />

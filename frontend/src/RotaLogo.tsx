@@ -14,14 +14,18 @@ export default function RotaLogo({
   return (
     <div className={`rotaLogo ${size === 'large' ? 'large' : ''}`} aria-label="Rota logo">
       <div className="rotaAppMark" aria-hidden="true">
-        <div className="rotaOrbit" />
+        <div className="rotaCycleRing">
+          <span />
+        </div>
+
         <div className="rotaLetters">
           <span>R</span>
           <span>O</span>
           <span>T</span>
           <span>A</span>
         </div>
-        <div className="rotaCoreDot" />
+
+        <div className="rotaCycleDot" />
       </div>
 
       {displayTagline && (

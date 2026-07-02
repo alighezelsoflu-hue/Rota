@@ -10792,3 +10792,355 @@ button.uiButton.secondary,
     animation: none;
   }
 }
+/* -------------------------------------------------------
+   Clear cycle demo + rotating Rota logo
+------------------------------------------------------- */
+
+.rotaAppMark {
+  position: relative;
+  isolation: isolate;
+}
+
+.rotaCycleRing {
+  position: absolute;
+  z-index: 2;
+  right: -13px;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  border: 3px solid #22c55e;
+  box-shadow:
+    0 0 22px rgba(34, 197, 94, 0.55),
+    inset 0 0 16px rgba(34, 197, 94, 0.16);
+}
+
+.rotaCycleRing span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #bbf7d0;
+  box-shadow: 0 0 18px rgba(34, 197, 94, 0.85);
+  transform-origin: 0 0;
+  animation: rotaDotOrbit 3.2s linear infinite;
+}
+
+.rotaCycleDot {
+  display: none;
+}
+
+.rotaLetters {
+  position: relative;
+  z-index: 4;
+}
+
+.rotaLetters span {
+  animation: rotaLetterPulse 3.2s ease-in-out infinite;
+}
+
+.rotaLetters span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.rotaLetters span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.rotaLetters span:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+.rotaLetters span:nth-child(4) {
+  animation-delay: 0.54s;
+}
+
+@keyframes rotaDotOrbit {
+  0% {
+    transform: rotate(0deg) translateX(21px) translateY(-3.5px);
+  }
+
+  100% {
+    transform: rotate(360deg) translateX(21px) translateY(-3.5px);
+  }
+}
+
+@keyframes rotaLetterPulse {
+  0%, 100% {
+    opacity: 0.88;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+/* Hero cycle demo */
+
+.heroCycleDemo {
+  width: 100%;
+  max-width: 560px;
+  padding: 28px;
+  border-radius: 34px;
+}
+
+.cycleDemoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.cycleDemoHeader h3 {
+  margin: 6px 0 0;
+  color: #f8fafc;
+  font-size: clamp(1.45rem, 3vw, 2.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.cycleDemoReceiver {
+  display: grid;
+  gap: 5px;
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(248, 250, 252, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.16);
+  margin-bottom: 16px;
+}
+
+.cycleDemoReceiver span,
+.cycleDemoNumbers span {
+  color: rgba(203, 213, 225, 0.9);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.cycleDemoReceiver strong {
+  color: #ffffff;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+}
+
+.cycleDemoReceiver small {
+  color: rgba(226, 232, 240, 0.82);
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.cycleDemoNumbers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cycleDemoNumbers div {
+  border-radius: 20px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.cycleDemoNumbers strong {
+  display: block;
+  margin-top: 5px;
+  color: #0f172a;
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+
+.cycleDemoNumbers span {
+  color: #64748b;
+}
+
+.cycleDemoProgress {
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(226, 232, 240, 0.24);
+  margin-bottom: 18px;
+}
+
+.cycleDemoProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.35);
+}
+
+.cycleDemoLedger {
+  display: grid;
+  gap: 8px;
+}
+
+.cycleDemoLedger div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.14);
+}
+
+.cycleDemoLedger div:last-child {
+  border-bottom: 0;
+}
+
+.cycleDemoLedger strong {
+  color: #f8fafc;
+  font-weight: 900;
+}
+
+.cycleDemoLedger em {
+  color: rgba(226, 232, 240, 0.78);
+  font-style: normal;
+  font-weight: 850;
+  text-align: right;
+}
+
+.cycleDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.cycleDot.success {
+  background: #22c55e;
+}
+
+.cycleDot.warning {
+  background: #f59e0b;
+}
+
+.cycleDot.danger {
+  background: #ef4444;
+}
+
+:root[data-theme='light'] .heroCycleDemo.premiumPanel,
+.heroCycleDemo.premiumPanel {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(34, 197, 94, 0.16), transparent 30%),
+    linear-gradient(135deg, #0f172a, #020617);
+}
+
+@media (max-width: 900px) {
+  .heroCycleDemo {
+    max-width: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .heroCycleDemo {
+    padding: 22px;
+    border-radius: 28px;
+  }
+
+  .cycleDemoHeader {
+    display: grid;
+  }
+
+  .cycleDemoNumbers {
+    grid-template-columns: 1fr;
+  }
+
+  .cycleDemoLedger div {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .cycleDemoLedger em {
+    grid-column: 2;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotaCycleRing span,
+  .rotaLetters span {
+    animation: none;
+  }
+}
+/* -------------------------------------------------------
+   Logo tagline below mark with green shine
+------------------------------------------------------- */
+
+.heroLogoLine {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.heroLogoLine .rotaLogo.large {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.heroLogoLine .rotaLogo.large .rotaLogoTagline strong {
+  display: inline-flex;
+  color: #16a34a;
+  font-size: clamp(1.08rem, 2vw, 1.35rem);
+  font-weight: 950;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  background: linear-gradient(90deg, #15803d, #22c55e, #86efac, #16a34a);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.35));
+  animation: rotaTaglineShine 4.8s ease-in-out infinite;
+}
+
+.heroTrustLine {
+  margin: 0 0 14px;
+  color: var(--ui-muted-strong, #475569);
+  font-weight: 850;
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+}
+
+@keyframes rotaTaglineShine {
+  0%, 100% {
+    background-position: 0% 50%;
+    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.22));
+  }
+
+  50% {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.42));
+  }
+}
+
+@media (max-width: 760px) {
+  .heroLogoLine {
+    justify-content: flex-start;
+  }
+
+  .heroLogoLine .rotaLogo.large .rotaLogoTagline strong {
+    font-size: 1.08rem;
+  }
+
+  .heroTrustLine {
+    font-size: 0.95rem;
+  }
+}
+
+:root[data-theme='dark'] .heroTrustLine {
+  color: #cbd5e1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroLogoLine .rotaLogo.large .rotaLogoTagline strong {
+    animation: none;
+  }
+}
