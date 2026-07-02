@@ -1,38 +1,36 @@
+import React from 'react';
+
 type RotaLogoProps = {
-  size?: 'small' | 'large'
-  showTagline?: boolean
-  showText?: boolean
-}
+  size?: 'sm' | 'md' | 'lg';
+  showWordmark?: boolean;
+  showTagline?: boolean;
+  className?: string;
+};
 
 export default function RotaLogo({
-  size = 'small',
-  showTagline,
-  showText,
+  size = 'md',
+  showWordmark = false,
+  showTagline = true,
+  className = '',
 }: RotaLogoProps) {
-  const displayTagline = showTagline ?? showText ?? true
-
   return (
-    <div className={`rotaLogo ${size === 'large' ? 'large' : ''}`} aria-label="Rota logo">
-      <div className="rotaAppMark" aria-hidden="true">
-        <div className="rotaCycleRing">
-          <span />
+    <div className={`rotaLogoLockup rotaLogoLockup--${size} ${className}`.trim()}>
+      <div className="rotaLogoMark" aria-label="Rota logo">
+        <div className="rotaLogoMarkInner">
+          <span className="rotaLogoText">ROTA</span>
+          <span className="rotaOrbit" aria-hidden="true" />
+          <span className="rotaOrbitDot" aria-hidden="true" />
         </div>
-
-        <div className="rotaLetters">
-          <span>R</span>
-          <span>O</span>
-          <span>T</span>
-          <span>A</span>
-        </div>
-
-        <div className="rotaCycleDot" />
       </div>
 
-      {displayTagline && (
-        <div className="rotaLogoTagline">
-          <strong>0% interest circles</strong>
+      {(showWordmark || showTagline) && (
+        <div className="rotaLogoMeta">
+          {showWordmark ? <div className="rotaLogoWordmark">Rota</div> : null}
+          {showTagline ? (
+            <div className="rotaLogoTagline">0% interest circles</div>
+          ) : null}
         </div>
       )}
     </div>
-  )
+  );
 }
