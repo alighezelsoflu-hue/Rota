@@ -11144,3 +11144,616 @@ button.uiButton.secondary,
     animation: none;
   }
 }
+:root {
+  --bg: #f5f8fc;
+  --surface: #ffffff;
+  --surface-soft: #f3f6fb;
+  --border: #d7e0ea;
+  --text: #0f172a;
+  --muted: #64748b;
+  --navy: #071327;
+  --navy-2: #0b1c36;
+  --green: #22c55e;
+  --green-strong: #16a34a;
+  --green-soft: #dcfce7;
+  --blue: #2f5fe3;
+  --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at top left, rgba(47, 95, 227, 0.06), transparent 32%),
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.08), transparent 30%),
+    var(--bg);
+  color: var(--text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.appShell {
+  min-height: 100vh;
+}
+
+/* Header */
+.marketingHeader {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(215, 224, 234, 0.8);
+}
+
+.marketingHeaderInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.marketingBrandInline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.marketingBrandText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.marketingBrandName {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.marketingBrandTagline {
+  margin-top: 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4ade80;
+  text-shadow:
+    0 0 8px rgba(74, 222, 128, 0.25),
+    0 0 16px rgba(74, 222, 128, 0.16);
+}
+
+.marketingNav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.marketingNav a {
+  font-weight: 700;
+  color: #334155;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  border: 1px solid transparent;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button--primary {
+  background: linear-gradient(180deg, var(--green), var(--green-strong));
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.25);
+}
+
+.button--secondary {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.button--header {
+  min-height: 50px;
+  padding: 0 22px;
+}
+
+/* Logo */
+.rotaLogoLockup {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.rotaLogoLockup--sm .rotaLogoMark {
+  width: 56px;
+  height: 56px;
+}
+
+.rotaLogoLockup--md .rotaLogoMark {
+  width: 76px;
+  height: 76px;
+}
+
+.rotaLogoLockup--lg .rotaLogoMark {
+  width: 128px;
+  height: 128px;
+}
+
+.rotaLogoMark {
+  position: relative;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #09142a 0%, #071327 56%, #0d2a2d 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 40px rgba(7, 19, 39, 0.28);
+  overflow: hidden;
+}
+
+.rotaLogoMark--nav {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+}
+
+.rotaLogoMarkInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.rotaLogoText {
+  position: relative;
+  z-index: 2;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  font-size: clamp(1rem, 2.4vw, 2.1rem);
+}
+
+.rotaLogoMark--nav .rotaLogoText {
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+}
+
+.rotaOrbit {
+  position: absolute;
+  inset: 11%;
+  border-radius: 50%;
+  border: 1px solid rgba(74, 222, 128, 0.18);
+  z-index: 1;
+}
+
+.rotaOrbitDot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  margin-top: -6px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, #bbf7d0 0%, #4ade80 48%, #16a34a 100%);
+  box-shadow:
+    0 0 10px rgba(74, 222, 128, 0.7),
+    0 0 24px rgba(34, 197, 94, 0.45),
+    0 0 36px rgba(34, 197, 94, 0.2);
+  transform-origin: 0 0;
+  animation: rotaOrbitAround 5.2s linear infinite;
+  z-index: 3;
+}
+
+@keyframes rotaOrbitAround {
+  0% {
+    transform: rotate(0deg) translateX(42px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(42px) rotate(-360deg);
+  }
+}
+
+.rotaLogoMark--nav .rotaOrbitDot {
+  animation: rotaOrbitAroundSmall 5.2s linear infinite;
+}
+
+@keyframes rotaOrbitAroundSmall {
+  0% {
+    transform: rotate(0deg) translateX(18px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(18px) rotate(-360deg);
+  }
+}
+
+.rotaLogoMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rotaLogoWordmark {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: var(--text);
+}
+
+.rotaLogoTagline {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #4ade80;
+  text-shadow:
+    0 0 10px rgba(74, 222, 128, 0.26),
+    0 0 20px rgba(74, 222, 128, 0.18);
+}
+
+/* Hero */
+.homeHero {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.homeHeroGrid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 38px;
+  align-items: center;
+}
+
+.homeHeroContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.homeHeroKicker {
+  margin: 22px 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.homeHeroTitle {
+  margin: 24px 0 18px;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.07em;
+  font-weight: 900;
+  max-width: 760px;
+}
+
+.homeHeroDescription {
+  margin: 0;
+  max-width: 700px;
+  font-size: 1.18rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.homeHeroActions {
+  margin-top: 30px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.homeHeroVisual {
+  display: flex;
+  justify-content: center;
+}
+
+/* Circle Example */
+.circleExampleCard {
+  width: 100%;
+  max-width: 640px;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 35%),
+    linear-gradient(180deg, #071327 0%, #03102d 100%);
+  color: #ffffff;
+  border-radius: 36px;
+  padding: 28px;
+  box-shadow: 0 30px 60px rgba(7, 19, 39, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.circleExampleTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.circleExampleEyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(78, 123, 203, 0.9);
+  color: #f8fafc;
+  font-size: 0.92rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.circleExampleBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #d9fbe3;
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 900;
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.14);
+}
+
+.circleExampleTitle {
+  margin: 0 0 18px;
+  font-size: clamp(2rem, 4.2vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.06em;
+  font-weight: 900;
+  max-width: 540px;
+}
+
+.circleExampleReceiver {
+  padding: 24px;
+  border-radius: 26px;
+  margin-bottom: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.circleExampleReceiverLabel {
+  font-size: 0.95rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.78);
+}
+
+.circleExampleReceiverValue {
+  margin-top: 12px;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.circleExampleReceiverNote {
+  margin: 12px 0 0;
+  color: rgba(255,255,255,0.78);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.circleExampleStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.circleExampleStat {
+  background: #f8fafc;
+  color: #0f172a;
+  border-radius: 24px;
+  padding: 24px 22px;
+}
+
+.circleExampleStatLabel {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #64748b;
+}
+
+.circleExampleStat strong {
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.circleExampleProgress {
+  margin-bottom: 20px;
+}
+
+.circleExampleProgressBar {
+  width: 100%;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  overflow: hidden;
+}
+
+.circleExampleProgressBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e 0%, #22c55e 70%, #58e08d 100%);
+}
+
+.circleExampleList {
+  display: flex;
+  flex-direction: column;
+}
+
+.circleExampleRow {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 20px 0;
+  border-top: 1px solid rgba(255,255,255,0.16);
+}
+
+.circleExampleDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+}
+
+.circleExampleDot--green {
+  background: #63d471;
+}
+
+.circleExampleDot--amber {
+  background: #fbbf24;
+}
+
+.circleExampleDot--red {
+  background: #f87171;
+}
+
+.circleExampleAction {
+  color: rgba(255,255,255,0.84);
+  font-size: 1.08rem;
+  line-height: 1.45;
+}
+
+.circleExampleStatus {
+  font-weight: 900;
+  font-size: 1rem;
+}
+
+.circleExampleStatus--ok {
+  color: #bbf7d0;
+}
+
+.circleExampleStatus--wait {
+  color: #fde68a;
+}
+
+.circleExampleStatus--pending {
+  color: #fca5a5;
+}
+
+/* Responsive */
+@media (max-width: 1120px) {
+  .homeHeroGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .homeHeroVisual {
+    justify-content: flex-start;
+  }
+
+  .circleExampleCard {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 860px) {
+  .marketingHeaderInner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .marketingNav {
+    justify-content: flex-start;
+  }
+
+  .homeHero {
+    padding: 32px 18px 60px;
+  }
+
+  .homeHeroTitle {
+    font-size: clamp(2.6rem, 12vw, 4.3rem);
+  }
+
+  .circleExampleStats {
+    grid-template-columns: 1fr;
+  }
+
+  .circleExampleRow {
+    grid-template-columns: 14px 1fr;
+  }
+
+  .circleExampleStatus {
+    grid-column: 2 / 3;
+  }
+}
+
+@media (max-width: 560px) {
+  .marketingBrandName {
+    font-size: 1.35rem;
+  }
+
+  .marketingBrandTagline {
+    font-size: 0.85rem;
+  }
+
+  .rotaLogoLockup--lg .rotaLogoMark {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+  }
+
+  .rotaLogoTagline {
+    font-size: 0.95rem;
+  }
+
+  .circleExampleCard {
+    padding: 20px;
+    border-radius: 26px;
+  }
+
+  .circleExampleTitle {
+    font-size: 2.2rem;
+  }
+
+  .circleExampleReceiver {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .circleExampleStat {
+    padding: 18px;
+    border-radius: 18px;
+  }
+}

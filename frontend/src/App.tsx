@@ -39,6 +39,7 @@ import PublicInvitePage from './PublicInvitePage'
 import AdminSafetyDashboard from './AdminSafetyDashboard'
 import GuestMobileAuthBar from './GuestMobileAuthBar'
 import InviteCodeJoinCard from './InviteCodeJoinCard'
+import HeroCycleDemo from './HeroCycleDemo'
 import CompactGroupHeader from './CompactGroupHeader'
 import GroupWorkspaceTabs from './GroupWorkspaceTabs'
 import type { GroupWorkspaceTabId } from './GroupWorkspaceTabs'
@@ -48,7 +49,6 @@ import GroupMembersTab from './GroupMembersTab'
 import GroupMessagesTab from './GroupMessagesTab'
 import GroupReviewsTab from './GroupReviewsTab'
 import GroupManageTab from './GroupManageTab'
-import HeroCycleDemo from './HeroCycleDemo'
 
 function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -153,11 +153,13 @@ function Landing() {
       <section className="heroShell">
         <div className="heroCopy">
           <div className="heroLogoLine">
-            <RotaLogo size="large" />
+            <RotaLogo size="lg" />
           </div>
 
           <p className="heroTrustLine">Trusted groups · direct contributions · clear records</p>
+
           <h1>Build trusted circles instead of paying bank interest.</h1>
+
           <p className="lead">
             Join one or more trusted groups, contribute directly, take turns receiving the lump sum,
             and grow a stronger community through trust, responsibility, and clear records.
@@ -192,6 +194,7 @@ function Landing() {
             icon="0%"
           />
         </div>
+
         <HeroCycleDemo />
       </section>
 
@@ -262,7 +265,7 @@ function Landing() {
         </div>
 
         <div className="flowCards">
-          <div>Pay <strong>€100</strong> to Ali</div>
+          <div>Pay <strong>€100</strong> to the receiver</div>
           <div>Upload proof</div>
           <div>Receiver confirms</div>
           <div>Group record updates</div>

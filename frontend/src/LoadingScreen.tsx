@@ -12,7 +12,7 @@ export default function LoadingScreen({
   return (
     <section className="rotaLoadingScreen" aria-live="polite" aria-busy="true">
       <div className="rotaLoadingCard">
-        <RotaLogo size="large" showTagline={false} />
+        <RotaLogo size="lg" showTagline={false} />
 
         <div className="rotaLoadingText">
           <h1>{title}</h1>
