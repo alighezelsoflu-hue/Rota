@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="132" fill="#0F172A"></rect>
+  <rect x="18" y="18" width="476" height="476" rx="116" fill="url(#paint0_radial)"></rect>
+  <rect x="18" y="18" width="476" height="476" rx="116" fill="url(#paint1_linear)"></rect>
+  <circle cx="414" cy="256" r="92" stroke="#22C55E" stroke-width="28"></circle>
+  <circle cx="414" cy="256" r="16" fill="#BBF7D0"></circle>
+  <text x="82" y="286" fill="#F8FAFC" font-family="Inter, Arial, sans-serif" font-size="88" font-weight="900" letter-spacing="10">ROTA</text>
+  <defs>
+    <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(392 218) rotate(133) scale(235)">
+      <stop stop-color="#22C55E" stop-opacity="0.42"></stop>
+      <stop offset="1" stop-color="#22C55E" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="paint1_linear" x1="54" y1="42" x2="456" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"></stop>
+      <stop offset="0.58" stop-color="#0F172A"></stop>
+      <stop offset="1" stop-color="#020617"></stop>
+    </linearGradient>
+  </defs>
+</svg>

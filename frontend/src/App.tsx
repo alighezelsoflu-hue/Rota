@@ -20,6 +20,7 @@ import {
 import ProductPrinciples from './ProductPrinciples'
 import LiveCircleSimulator from './LiveCircleSimulator'
 import RotaLogo from './RotaLogo'
+import LoadingScreen from './LoadingScreen'
 import NetworkBackground from './NetworkBackground'
 import ThemeToggle from './ThemeToggle'
 import TrustNetworkDashboard from './TrustNetworkDashboard'
@@ -80,10 +81,12 @@ function Shell({
   user,
   onLogout,
   children,
+  showGuestAuth = true,
 }: {
   user: User | null
   onLogout: () => void
   children: React.ReactNode
+  showGuestAuth?: boolean
 }) {
   return (
     <div className={user ? 'appShell' : 'appShell guestShell'}>
@@ -124,7 +127,7 @@ function Shell({
       <main className="container">{children}</main>
 
       {user && <MobileBottomNav user={user} onLogout={onLogout} />}
-      {!user && <GuestMobileAuthBar />}
+      {!user && showGuestAuth && <GuestMobileAuthBar />}
     </div>
   )
 }
@@ -138,7 +141,7 @@ function RequireAuth({
   loading: boolean
   children: React.ReactNode
 }) {
-  if (loading) return <Skeleton variant="page" />
+  if (loading) return <LoadingScreen />
   if (!user) return <Navigate to="/login" replace />
   return <>{children}</>
 }
@@ -153,10 +156,10 @@ function Landing() {
           </div>
 
           <p className="eyebrow">0% interest trusted circles</p>
-          <h1>Instead of paying bank interest, build trusted circles that help each other.</h1>
+          <h1>Build trusted circles instead of paying bank interest.</h1>
           <p className="lead">
             Join one or more trusted groups, contribute directly, take turns receiving the lump sum,
-            and grow a stronger community through trust, responsibility, and transparent records.
+            and grow a stronger community through trust, responsibility, and clear records.
           </p>
 
           <div className="businessHeroMessage">
@@ -166,12 +169,12 @@ function Landing() {
             </div>
 
             <div>
-              <strong>Trust-based network</strong>
+              <strong>Trusted groups</strong>
               <span>Build reliable circles with people you already know or carefully approve.</span>
             </div>
 
             <div>
-              <strong>Responsibility first</strong>
+              <strong>Responsible records</strong>
               <span>Agreements, proof, confirmations, reviews, and audit logs keep the group accountable.</span>
             </div>
           </div>
@@ -184,18 +187,18 @@ function Landing() {
           <ActionBanner
             tone="success"
             title="Rota coordinates circles. Rota does not lend or hold money."
-            description="Members pay each other directly outside the app. Rota provides structure, trust signals, records, approvals, and group transparency."
+            description="Members pay each other directly outside the app. Rota provides structure, trust signals, records, approvals, and transparency."
             icon="0%"
           />
         </div>
 
-        <Card className="heroDemo">
+        <Card className="heroDemo premiumPanel">
           <div className="demoHeader">
             <div>
-              <p className="eyebrow">Trusted circle example</p>
+              <p className="eyebrow">Circle example</p>
               <h3>Ali receives this month</h3>
             </div>
-            <Badge tone="success" dot>0% group interest</Badge>
+            <Badge tone="success" dot>0% interest</Badge>
           </div>
 
           <div className="moneyLine">
@@ -238,37 +241,33 @@ function Landing() {
           <Card compact>
             <article className="featureCard">
               <span className="icon">1</span>
-              <h3>Create or join a circle</h3>
-              <p>Start with people you trust, or request access to a group using an invite code or link.</p>
+              <h3>Create or join</h3>
+              <p>Start with people you trust, or request access using an invite code or link.</p>
             </article>
           </Card>
 
           <Card compact>
             <article className="featureCard">
               <span className="icon">2</span>
-              <h3>Members contribute directly</h3>
-              <p>
-                Each cycle, members send money directly to the selected receiver using their own payment method.
-              </p>
+              <h3>Pay directly</h3>
+              <p>Each cycle, members send money directly to the selected receiver.</p>
             </article>
           </Card>
 
           <Card compact>
             <article className="featureCard">
               <span className="icon">3</span>
-              <h3>The group builds trust</h3>
-              <p>
-                Proof, confirmations, reviews, responsibilities, and transparent records help the community stay accountable.
-              </p>
+              <h3>Build trust</h3>
+              <p>Proof, confirmations, reviews, and transparent records help everyone stay accountable.</p>
             </article>
           </Card>
         </div>
       </section>
 
-      <section id="trust" className="trustPanel">
+      <section id="trust" className="trustPanel premiumPanel">
         <div>
-          <p className="eyebrow">Trust, responsibility, community</p>
-          <h2>Rota is the structure behind trusted financial cooperation.</h2>
+          <p className="eyebrow">Trust and responsibility</p>
+          <h2>Structure for trusted financial cooperation.</h2>
           <p className="mutedText">
             Your group keeps control of the money flow. Rota keeps the records clear,
             visible, and easy to review.
@@ -276,10 +275,10 @@ function Landing() {
         </div>
 
         <div className="trustGrid">
-          <div><strong>0% group interest</strong><span>No group interest charges and no platform wallet.</span></div>
-          <div><strong>Direct member payments</strong><span>Members pay the receiver outside the app.</span></div>
-          <div><strong>Proof and confirmations</strong><span>Payment records are visible to the group.</span></div>
-          <div><strong>Trust network</strong><span>Responsible members build stronger community reputation.</span></div>
+          <div><strong>0% interest</strong><span>No group interest charges and no platform wallet.</span></div>
+          <div><strong>Direct payments</strong><span>Members pay the receiver outside the app.</span></div>
+          <div><strong>Proof records</strong><span>Payment status is visible to the group.</span></div>
+          <div><strong>Trust network</strong><span>Responsible members build stronger reputation.</span></div>
         </div>
       </section>
 
@@ -293,16 +292,16 @@ function Landing() {
         </div>
 
         <div className="flowCards">
-          <div>Members see: <strong>Pay €100 to Ali by 5 Jan</strong></div>
-          <div>They pay Ali directly outside Rota</div>
-          <div>They upload proof</div>
-          <div>Ali and the group confirm</div>
+          <div>Pay <strong>€100</strong> to Ali</div>
+          <div>Upload proof</div>
+          <div>Receiver confirms</div>
+          <div>Group record updates</div>
         </div>
       </section>
 
       <Card className="finalCta">
-        <p className="eyebrow">Build community capital</p>
-        <h2>Start with people who already trust each other.</h2>
+        <p className="eyebrow">Start carefully</p>
+        <h2>Begin with people who already trust each other.</h2>
         <p>
           Create a circle, invite responsible members, coordinate direct contributions,
           and build a stronger trust network over time.
@@ -341,8 +340,8 @@ function Login({ onLogin }: { onLogin: () => Promise<void> }) {
     <section className="authLayout">
       <form className="uiCard form authCard" onSubmit={submit}>
         <p className="uiEyebrow">Welcome back</p>
-        <h1>Log in to Rota</h1>
-        <p className="mutedText">Continue tracking your circles, contributions, confirmations, and group ledger.</p>
+        <h1>Log in</h1>
+        <p className="mutedText">Continue tracking your trusted circles.</p>
 
         {error && (
           <ActionBanner
@@ -396,9 +395,9 @@ function Register({ onLogin }: { onLogin: () => Promise<void> }) {
   return (
     <section className="authLayout">
       <form className="uiCard form authCard" onSubmit={submit}>
-        <p className="uiEyebrow">Create your account</p>
-        <h1>Start your first circle</h1>
-        <p className="mutedText">Create or join invite-only contribution groups. Rota coordinates records, not money.</p>
+        <p className="uiEyebrow">Create account</p>
+        <h1>Start with Rota</h1>
+        <p className="mutedText">Create or join invite-only contribution circles. Rota coordinates records, not money.</p>
 
         {error && (
           <ActionBanner
@@ -452,15 +451,15 @@ function GroupListSection({
       wide
       eyebrow="My Groups"
       title="Your circles"
-      description="Open a group to see its payments, members, messages, reviews, and settings."
+      description="Open a group to see payments, members, messages, reviews, and settings."
     >
       {loading ? (
         <Skeleton variant="card" />
       ) : groups.length === 0 ? (
         <EmptyState
           icon="◎"
-          title="You are not in any group yet"
-          description="Create your first circle from the top button, or use an invite code below to request access."
+          title="No groups yet"
+          description="Create your first circle from the top button, or use an invite code below."
         />
       ) : (
         <div className="professionalGroupList">
@@ -554,7 +553,7 @@ function Dashboard({ user }: { user: User }) {
         className="wide compactDashboardHeader"
         eyebrow="My Groups"
         title={`Welcome, ${user.name}`}
-        description="Open your groups first. Join or create a new circle only when you are ready."
+        description="Open your groups first. Join or create a new circle when you are ready."
         meta={
           <>
             <Badge status={user.verification_status} dot />
@@ -583,7 +582,7 @@ function Dashboard({ user }: { user: User }) {
         <ActionBanner
           className="wide"
           tone="warning"
-          title="Some groups need attention"
+          title="Groups need attention"
           description={`${reviewGroups.length} group${reviewGroups.length === 1 ? '' : 's'} are forming, pending, or in cycle review.`}
           action={<ButtonLink to="/actions" variant="secondary" size="sm">Review actions</ButtonLink>}
           icon="!"
@@ -647,9 +646,9 @@ function NewGroup() {
   return (
     <div className="createLayout">
       <form className="uiCard form" onSubmit={submit}>
-        <p className="uiEyebrow">New contribution circle</p>
+        <p className="uiEyebrow">New circle</p>
         <h1>Create group</h1>
-        <p className="mutedText">Start with a trusted invite-only group. You can share the invite code after creation.</p>
+        <p className="mutedText">Start with a trusted invite-only group.</p>
 
         {error && (
           <ActionBanner
@@ -662,7 +661,7 @@ function NewGroup() {
 
         <label>
           Group name
-          <input value={name} onChange={event => setName(event.target.value)} placeholder="Example: Family monthly circle" required />
+          <input value={name} onChange={event => setName(event.target.value)} placeholder="Example: Family circle" required />
         </label>
 
         <label>
@@ -698,19 +697,16 @@ function NewGroup() {
         <Button full type="submit">Create group</Button>
       </form>
 
-      <Card className="guideCard" eyebrow="Circle rules" title="Members agree before the loop starts">
+      <Card className="guideCard" eyebrow="Circle rules" title="Before you start">
         <ul className="checkList">
           <li>Invite-only members</li>
           <li>Members accept the Circle Commitment</li>
           <li>Members stay after the first cycle starts</li>
           <li>Group stops only if all members vote to stop</li>
-          <li>Organizer archives only after unanimous stop vote</li>
-          <li>Proof upload, receiver confirmation, and member receipt review</li>
-          <li>Members can review each other after sharing a group</li>
-          <li>Group members can use circle chat</li>
+          <li>Proof, confirmations, reviews, and audit logs are tracked</li>
         </ul>
 
-        <ButtonLink full variant="secondary" to="/simulator">Open full simulator</ButtonLink>
+        <ButtonLink full variant="secondary" to="/simulator">Open simulator</ButtonLink>
       </Card>
     </div>
   )
@@ -752,7 +748,7 @@ function GroupPage({ user }: { user: User }) {
     )
   }
 
-  if (!detail) return <Skeleton variant="page" />
+  if (!detail) return <LoadingScreen title="Opening group" subtitle="Loading your circle workspace..." />
 
   const isOrganizer = detail.members.some(member => member.user_id === user.id && ['organizer', 'co_organizer'].includes(member.role))
 
@@ -864,6 +860,14 @@ export default function App() {
     clearToken()
     auth.refresh()
     navigate('/')
+  }
+
+  if (auth.loading) {
+    return (
+      <Shell user={null} onLogout={logout} showGuestAuth={false}>
+        <LoadingScreen />
+      </Shell>
+    )
   }
 
   return (

@@ -1,14 +1,21 @@
 type RotaLogoProps = {
   size?: 'small' | 'large'
   showTagline?: boolean
+  showText?: boolean
 }
 
-export default function RotaLogo({ size = 'small', showTagline = true }: RotaLogoProps) {
+export default function RotaLogo({
+  size = 'small',
+  showTagline,
+  showText,
+}: RotaLogoProps) {
+  const displayTagline = showTagline ?? showText ?? true
+
   return (
     <div className={`rotaLogo ${size === 'large' ? 'large' : ''}`} aria-label="Rota logo">
-      <div className="rotaAppMark">
+      <div className="rotaAppMark" aria-hidden="true">
         <div className="rotaOrbit" />
-        <div className="rotaLetters" aria-hidden="true">
+        <div className="rotaLetters">
           <span>R</span>
           <span>O</span>
           <span>T</span>
@@ -17,7 +24,7 @@ export default function RotaLogo({ size = 'small', showTagline = true }: RotaLog
         <div className="rotaCoreDot" />
       </div>
 
-      {showTagline && (
+      {displayTagline && (
         <div className="rotaLogoTagline">
           <strong>0% interest circles</strong>
         </div>

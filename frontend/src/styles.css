@@ -10211,3 +10211,584 @@ body[data-theme='dark'],
   background: rgba(34, 197, 94, 0.14);
   border-color: rgba(34, 197, 94, 0.24);
 }
+/* -------------------------------------------------------
+   Rota design refresh: cleaner, premium, less redundant
+------------------------------------------------------- */
+
+:root {
+  --ui-primary: #16a34a;
+  --ui-primary-strong: #15803d;
+  --ui-primary-soft: #dcfce7;
+  --ui-primary-ring: rgba(22, 163, 74, 0.22);
+
+  --ui-premium: #0f172a;
+  --ui-premium-strong: #020617;
+  --ui-premium-soft: #111827;
+
+  --ui-surface: #ffffff;
+  --ui-surface-soft: #f8fafc;
+  --ui-surface-muted: #f1f5f9;
+
+  --ui-text: #0f172a;
+  --ui-muted: #64748b;
+  --ui-muted-strong: #475569;
+  --ui-border: rgba(15, 23, 42, 0.09);
+
+  --ui-shadow-card: 0 18px 50px rgba(15, 23, 42, 0.08);
+  --ui-shadow-lift: 0 28px 80px rgba(15, 23, 42, 0.14);
+}
+
+/* One main accent color. Keep green for trust/action only. */
+.uiButton:not(.secondary):not(.ghost),
+button.uiButton:not(.secondary):not(.ghost),
+.navButton,
+.guestMobileSignup {
+  background: linear-gradient(135deg, var(--ui-primary), var(--ui-primary-strong));
+  color: #ffffff;
+}
+
+.uiButton.secondary,
+button.uiButton.secondary,
+.guestMobileLogin {
+  background: var(--ui-surface-soft);
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+}
+
+.uiActionBanner.success,
+.uiBadge.success,
+.badge.success,
+.statusBadge.success {
+  background: var(--ui-primary-soft);
+  color: #166534;
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+/* Reduce heavy green gradients on broad surfaces. */
+.appShell,
+.landing,
+.professionalDashboard,
+.compactGroupWorkspace {
+  background:
+    radial-gradient(circle at 18% 4%, rgba(59, 130, 246, 0.08), transparent 28%),
+    radial-gradient(circle at 90% 14%, rgba(22, 163, 74, 0.07), transparent 24%),
+    linear-gradient(180deg, #f8fafc, #eef4f8);
+}
+
+.uiCard,
+.card,
+.compactGroupHeader,
+.groupWorkspaceTabs,
+.dashboardQuickActions,
+.businessHeroMessage,
+.inviteJoinCard {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9));
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-card);
+}
+
+/* Dark navy only for premium/high-value panels. */
+.premiumPanel,
+.heroDemo,
+.trustPanel,
+.yourPosition,
+.rotaPremiumPanel {
+  background:
+    radial-gradient(circle at 92% 12%, rgba(34, 197, 94, 0.13), transparent 30%),
+    linear-gradient(135deg, var(--ui-premium), var(--ui-premium-strong));
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 26px 70px rgba(15, 23, 42, 0.24);
+}
+
+.premiumPanel h1,
+.premiumPanel h2,
+.premiumPanel h3,
+.heroDemo h1,
+.heroDemo h2,
+.heroDemo h3,
+.trustPanel h1,
+.trustPanel h2,
+.trustPanel h3,
+.yourPosition h1,
+.yourPosition h2,
+.yourPosition h3 {
+  color: #f8fafc;
+}
+
+.premiumPanel p,
+.premiumPanel span,
+.heroDemo p,
+.heroDemo span,
+.trustPanel p,
+.trustPanel span,
+.yourPosition p,
+.yourPosition span {
+  color: rgba(226, 232, 240, 0.86);
+}
+
+/* Shorter, cleaner card typography. */
+.uiCard h1,
+.uiCard h2,
+.uiCard h3,
+.card h1,
+.card h2,
+.card h3 {
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+}
+
+.uiCard p,
+.card p,
+.mutedText,
+.lead {
+  line-height: 1.58;
+}
+
+.uiEyebrow,
+.eyebrow {
+  letter-spacing: 0.16em;
+  font-weight: 950;
+}
+
+/* -------------------------------------------------------
+   Rota premium square app logo
+------------------------------------------------------- */
+
+.rotaLogo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.rotaAppMark {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  border-radius: 20px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 82% 42%, rgba(34, 197, 94, 0.35), transparent 26%),
+    radial-gradient(circle at 30% 25%, rgba(59, 130, 246, 0.18), transparent 32%),
+    linear-gradient(135deg, #0f172a, #111827 58%, #020617);
+  box-shadow:
+    0 18px 42px rgba(15, 23, 42, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.rotaAppMark::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background:
+    conic-gradient(
+      from 120deg,
+      transparent 0deg,
+      rgba(34, 197, 94, 0.08) 80deg,
+      rgba(34, 197, 94, 0.36) 125deg,
+      transparent 180deg,
+      transparent 360deg
+    );
+  animation: rotaMarkSweep 5.5s linear infinite;
+}
+
+.rotaAppMark::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 78% 42%, rgba(34, 197, 94, 0.18), transparent 30%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.96));
+}
+
+.rotaOrbit {
+  position: absolute;
+  z-index: 2;
+  right: -13px;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  border: 3px solid #22c55e;
+  box-shadow:
+    0 0 22px rgba(34, 197, 94, 0.55),
+    inset 0 0 16px rgba(34, 197, 94, 0.16);
+  animation: rotaOrbitPulse 2.8s ease-in-out infinite;
+}
+
+.rotaLetters {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: rgba(248, 250, 252, 0.94);
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  font-size: 1.05rem;
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.22);
+}
+
+.rotaLetters span {
+  display: inline-block;
+  animation: rotaLetterFloat 3.2s ease-in-out infinite;
+}
+
+.rotaLetters span:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.rotaLetters span:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.rotaLetters span:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.rotaCoreDot {
+  position: absolute;
+  z-index: 4;
+  right: 11px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: #bbf7d0;
+  box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
+}
+
+.rotaLogoTagline {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rotaLogoTagline strong {
+  color: var(--ui-muted-strong);
+  font-size: 1rem;
+  font-weight: 950;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.rotaLogo.large {
+  gap: 16px;
+}
+
+.rotaLogo.large .rotaAppMark {
+  width: 86px;
+  height: 86px;
+  flex-basis: 86px;
+  border-radius: 28px;
+}
+
+.rotaLogo.large .rotaAppMark::after {
+  border-radius: 26px;
+}
+
+.rotaLogo.large .rotaOrbit {
+  width: 58px;
+  height: 58px;
+  right: -18px;
+}
+
+.rotaLogo.large .rotaLetters {
+  font-size: 1.42rem;
+  gap: 4px;
+}
+
+.rotaLogo.large .rotaCoreDot {
+  right: 15px;
+  width: 9px;
+  height: 9px;
+}
+
+.rotaLogo.large .rotaLogoTagline strong {
+  font-size: 1.35rem;
+}
+
+@keyframes rotaMarkSweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotaOrbitPulse {
+  0%, 100% {
+    transform: translateY(-50%) scale(1);
+    opacity: 0.95;
+  }
+
+  50% {
+    transform: translateY(-50%) scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes rotaLetterFloat {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: translateY(-1px);
+    opacity: 1;
+  }
+}
+
+/* -------------------------------------------------------
+   Square icon style for avatars, groups, badges
+------------------------------------------------------- */
+
+.avatar,
+.profilePictureAvatar,
+.messageThreadAvatar,
+.professionalGroupIcon,
+.principleIcon,
+.mobileMoreLink > span,
+.dashboardQuickAction > span,
+.profilePhotoAvatarWrap,
+.rotaSquareIcon {
+  border-radius: 18px !important;
+}
+
+.avatar,
+.profilePictureAvatar,
+.messageThreadAvatar,
+.professionalGroupIcon,
+.rotaSquareIcon {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.18), transparent 34%),
+    linear-gradient(135deg, #0f172a, #111827);
+  color: #f8fafc;
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.16);
+}
+
+.principleIcon,
+.mobileMoreLink > span,
+.dashboardQuickAction > span {
+  background: var(--ui-primary-soft);
+  color: var(--ui-primary);
+}
+
+/* -------------------------------------------------------
+   Loading screen
+------------------------------------------------------- */
+
+.rotaLoadingScreen {
+  min-height: min(70vh, 720px);
+  display: grid;
+  place-items: center;
+  padding: 48px 18px;
+}
+
+.rotaLoadingCard {
+  width: min(420px, 100%);
+  display: grid;
+  place-items: center;
+  gap: 22px;
+  padding: 36px;
+  border-radius: 34px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9));
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-lift);
+  text-align: center;
+  backdrop-filter: blur(18px);
+}
+
+.rotaLoadingText h1 {
+  margin: 0;
+  color: var(--ui-text);
+  font-size: 1.4rem;
+  letter-spacing: -0.04em;
+}
+
+.rotaLoadingText p {
+  margin: 8px 0 0;
+  color: var(--ui-muted);
+  font-weight: 780;
+}
+
+.rotaLoadingBar {
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.rotaLoadingBar span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ui-primary), #22c55e);
+  animation: rotaLoadingMove 1.25s ease-in-out infinite;
+}
+
+@keyframes rotaLoadingMove {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+/* -------------------------------------------------------
+   Readable principle cards
+------------------------------------------------------- */
+
+.principlesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 18px;
+  width: 100%;
+}
+
+.compactPrinciples {
+  grid-template-columns: 1fr;
+}
+
+.principleCard {
+  min-width: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.principleCard h3,
+.principleCard p {
+  max-width: 100%;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
+.principleCard h3 {
+  line-height: 1.18;
+}
+
+.principleCard p {
+  line-height: 1.55;
+}
+
+/* Dark mode */
+:root[data-theme='dark'] {
+  --ui-surface: #0f172a;
+  --ui-surface-soft: #111827;
+  --ui-surface-muted: #1e293b;
+  --ui-text: #f8fafc;
+  --ui-muted: #94a3b8;
+  --ui-muted-strong: #cbd5e1;
+  --ui-border: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .appShell,
+:root[data-theme='dark'] .landing,
+:root[data-theme='dark'] .professionalDashboard,
+:root[data-theme='dark'] .compactGroupWorkspace {
+  background:
+    radial-gradient(circle at 18% 4%, rgba(59, 130, 246, 0.12), transparent 28%),
+    radial-gradient(circle at 90% 14%, rgba(22, 163, 74, 0.09), transparent 24%),
+    linear-gradient(180deg, #020617, #0f172a);
+}
+
+:root[data-theme='dark'] .uiCard,
+:root[data-theme='dark'] .card,
+:root[data-theme='dark'] .compactGroupHeader,
+:root[data-theme='dark'] .groupWorkspaceTabs,
+:root[data-theme='dark'] .businessHeroMessage,
+:root[data-theme='dark'] .inviteJoinCard,
+:root[data-theme='dark'] .rotaLoadingCard {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .rotaLogoTagline strong {
+  color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .rotaLoadingBar {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+/* Mobile refinements */
+@media (max-width: 760px) {
+  .topbar .rotaLogoTagline {
+    display: none;
+  }
+
+  .topbar .rotaAppMark {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+    border-radius: 18px;
+  }
+
+  .topbar .rotaAppMark::after {
+    border-radius: 16px;
+  }
+
+  .topbar .rotaLetters {
+    font-size: 0.96rem;
+  }
+
+  .principlesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .principleCard {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .principleIcon {
+    width: 52px;
+    height: 52px;
+    font-size: 0.95rem;
+  }
+
+  .principleCard h3 {
+    font-size: 1.08rem;
+  }
+
+  .principleCard p {
+    font-size: 0.94rem;
+  }
+
+  .rotaLoadingCard {
+    padding: 28px;
+    border-radius: 28px;
+  }
+}
+
+@media (max-width: 430px) {
+  .principleCard {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotaAppMark::before,
+  .rotaOrbit,
+  .rotaLetters span,
+  .rotaLoadingBar span {
+    animation: none;
+  }
+}
