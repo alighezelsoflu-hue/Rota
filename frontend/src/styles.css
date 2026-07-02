@@ -11757,3 +11757,629 @@ a {
     border-radius: 18px;
   }
 }
+/* -------------------------------------------------------
+   Rota favicon/PWA-aligned logo, loading, and dark-safe hero
+------------------------------------------------------- */
+
+:root {
+  --rota-green: #22c55e;
+  --rota-green-strong: #16a34a;
+  --rota-green-soft: #dcfce7;
+  --rota-green-glow: rgba(34, 197, 94, 0.34);
+
+  --rota-navy: #0f172a;
+  --rota-navy-deep: #020617;
+  --rota-navy-soft: #111827;
+
+  --rota-surface: #ffffff;
+  --rota-surface-soft: #f8fafc;
+  --rota-text: #0f172a;
+  --rota-muted: #64748b;
+  --rota-muted-strong: #475569;
+  --rota-border: rgba(15, 23, 42, 0.1);
+}
+
+/* Logo lockup */
+
+.rotaLogoLockup {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.rotaLogoLockup--sm .rotaLogoMark {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+}
+
+.rotaLogoLockup--md .rotaLogoMark {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+}
+
+.rotaLogoLockup--lg .rotaLogoMark {
+  width: 128px;
+  height: 128px;
+  border-radius: 32px;
+}
+
+.rotaLogoMark {
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 78% 32%, rgba(34, 197, 94, 0.28), transparent 34%),
+    linear-gradient(135deg, #111827 0%, #0f172a 58%, #020617 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 42px rgba(15, 23, 42, 0.24);
+}
+
+.rotaLogoMark::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background:
+    conic-gradient(
+      from 120deg,
+      transparent 0deg,
+      rgba(34, 197, 94, 0.08) 80deg,
+      rgba(34, 197, 94, 0.28) 122deg,
+      transparent 180deg,
+      transparent 360deg
+    );
+  animation: rotaMarkSweep 7s linear infinite;
+}
+
+.rotaLogoMarkInner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.rotaLogoMarkInner::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 76% 36%, rgba(34, 197, 94, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.96));
+}
+
+.rotaLogoText {
+  position: relative;
+  z-index: 4;
+  color: #f8fafc;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.22),
+    0 0 16px rgba(248, 250, 252, 0.16);
+}
+
+.rotaLogoLockup--sm .rotaLogoText {
+  font-size: 0.78rem;
+}
+
+.rotaLogoLockup--md .rotaLogoText {
+  font-size: 1.06rem;
+}
+
+.rotaLogoLockup--lg .rotaLogoText {
+  font-size: 1.82rem;
+}
+
+.rotaLogoOrbitPath {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  border-radius: 999px;
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.rotaLogoLockup--sm .rotaLogoOrbitPath {
+  width: 42px;
+  height: 26px;
+}
+
+.rotaLogoLockup--md .rotaLogoOrbitPath {
+  width: 58px;
+  height: 34px;
+}
+
+.rotaLogoLockup--lg .rotaLogoOrbitPath {
+  width: 106px;
+  height: 62px;
+}
+
+.rotaOrbitDot {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 50%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 35%, #dcfce7 0%, #4ade80 46%, #16a34a 100%);
+  box-shadow:
+    0 0 10px rgba(74, 222, 128, 0.72),
+    0 0 24px rgba(34, 197, 94, 0.44);
+  animation: rotaOrbitAroundLg 5.2s linear infinite;
+}
+
+.rotaLogoLockup--sm .rotaOrbitDot {
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  margin-top: -3.5px;
+  animation-name: rotaOrbitAroundSm;
+}
+
+.rotaLogoLockup--md .rotaOrbitDot {
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  margin-top: -4.5px;
+  animation-name: rotaOrbitAroundMd;
+}
+
+.rotaLogoLockup--lg .rotaOrbitDot {
+  width: 13px;
+  height: 13px;
+  margin-left: -6.5px;
+  margin-top: -6.5px;
+}
+
+.rotaLogoMeta {
+  display: grid;
+  gap: 4px;
+}
+
+.rotaLogoWordmark {
+  color: var(--rota-text);
+  font-size: 2rem;
+  font-weight: 950;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.rotaLogoTagline {
+  display: inline-flex;
+  color: transparent;
+  background: linear-gradient(90deg, #15803d, #22c55e, #86efac, #16a34a);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.34));
+  animation: rotaTaglineShine 4.8s ease-in-out infinite;
+}
+
+.rotaLogoLockup--sm .rotaLogoTagline {
+  font-size: 0.86rem;
+}
+
+.rotaLogoLockup--md .rotaLogoTagline {
+  font-size: 1rem;
+}
+
+.rotaLogoLockup--lg .rotaLogoTagline {
+  font-size: clamp(1.08rem, 2vw, 1.38rem);
+}
+
+/* Topbar uses the square mark only */
+
+.topbar .brand .rotaLogoLockup {
+  flex-direction: row;
+  align-items: center;
+}
+
+.topbar .brand .rotaLogoMeta {
+  display: none;
+}
+
+/* Hero layout refinements */
+
+.heroLogoLine {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.heroTrustLine {
+  margin: 0 0 14px;
+  color: var(--rota-muted-strong);
+  font-weight: 850;
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+}
+
+/* Loading screen */
+
+.rotaLoadingScreen {
+  min-height: min(72vh, 760px);
+  display: grid;
+  place-items: center;
+  padding: 48px 18px;
+}
+
+.rotaLoadingCard {
+  width: min(420px, 100%);
+  display: grid;
+  place-items: center;
+  gap: 22px;
+  padding: 36px;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(34, 197, 94, 0.08), transparent 36%),
+    rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--rota-border);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.14);
+  text-align: center;
+  backdrop-filter: blur(18px);
+}
+
+.rotaLoadingText h1 {
+  margin: 0;
+  color: var(--rota-text);
+  font-size: 1.4rem;
+  letter-spacing: -0.04em;
+}
+
+.rotaLoadingText p {
+  margin: 8px 0 0;
+  color: var(--rota-muted);
+  font-weight: 780;
+}
+
+.rotaLoadingBar {
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.rotaLoadingBar span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--rota-green-strong), var(--rota-green));
+  animation: rotaLoadingMove 1.25s ease-in-out infinite;
+}
+
+/* Dark-mode-safe hero cycle demo */
+
+.heroCycleDemo {
+  width: 100%;
+  max-width: 560px;
+  padding: 28px;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(34, 197, 94, 0.16), transparent 30%),
+    linear-gradient(135deg, #0f172a, #020617);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 26px 70px rgba(15, 23, 42, 0.24);
+}
+
+.cycleDemoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.cycleDemoHeader h3 {
+  margin: 6px 0 0;
+  color: #f8fafc;
+  font-size: clamp(1.45rem, 3vw, 2.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.cycleInterestBadge,
+.heroCycleDemo .cycleInterestBadge {
+  background: #dcfce7 !important;
+  color: #052e16 !important;
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 0 22px rgba(34, 197, 94, 0.22);
+  font-weight: 950;
+}
+
+.cycleDemoReceiver {
+  display: grid;
+  gap: 5px;
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(248, 250, 252, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.16);
+  margin-bottom: 16px;
+}
+
+.cycleDemoReceiver span,
+.cycleDemoNumbers span {
+  color: rgba(203, 213, 225, 0.95);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.cycleDemoReceiver strong {
+  color: #ffffff;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+}
+
+.cycleDemoReceiver small {
+  color: rgba(226, 232, 240, 0.88);
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.cycleDemoNumbers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cycleDemoNumbers div {
+  border-radius: 20px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.cycleDemoNumbers strong {
+  display: block;
+  margin-top: 5px;
+  color: #0f172a;
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+
+.cycleDemoNumbers span {
+  color: #64748b;
+}
+
+.cycleDemoProgress {
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(226, 232, 240, 0.24);
+  margin-bottom: 18px;
+}
+
+.cycleDemoProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.35);
+}
+
+.cycleDemoLedger {
+  display: grid;
+  gap: 8px;
+}
+
+.cycleDemoLedger div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.14);
+}
+
+.cycleDemoLedger div:last-child {
+  border-bottom: 0;
+}
+
+.cycleDemoLedger strong {
+  color: #f8fafc;
+  font-weight: 900;
+}
+
+.cycleDemoLedger em {
+  color: rgba(226, 232, 240, 0.82);
+  font-style: normal;
+  font-weight: 850;
+  text-align: right;
+}
+
+.cycleDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.cycleDot.success {
+  background: #22c55e;
+}
+
+.cycleDot.warning {
+  background: #f59e0b;
+}
+
+.cycleDot.danger {
+  background: #ef4444;
+}
+
+/* Animations */
+
+@keyframes rotaMarkSweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotaOrbitAroundSm {
+  0% {
+    transform: rotate(0deg) translateX(21px) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) translateX(21px) scale(1.12);
+  }
+
+  100% {
+    transform: rotate(360deg) translateX(21px) scale(1);
+  }
+}
+
+@keyframes rotaOrbitAroundMd {
+  0% {
+    transform: rotate(0deg) translateX(29px) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) translateX(29px) scale(1.12);
+  }
+
+  100% {
+    transform: rotate(360deg) translateX(29px) scale(1);
+  }
+}
+
+@keyframes rotaOrbitAroundLg {
+  0% {
+    transform: rotate(0deg) translateX(53px) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) translateX(53px) scale(1.12);
+  }
+
+  100% {
+    transform: rotate(360deg) translateX(53px) scale(1);
+  }
+}
+
+@keyframes rotaTaglineShine {
+  0%, 100% {
+    background-position: 0% 50%;
+    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.22));
+  }
+
+  50% {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.42));
+  }
+}
+
+@keyframes rotaLoadingMove {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+/* Dark mode */
+
+:root[data-theme='dark'] {
+  --rota-surface: #0f172a;
+  --rota-surface-soft: #111827;
+  --rota-text: #f8fafc;
+  --rota-muted: #94a3b8;
+  --rota-muted-strong: #cbd5e1;
+  --rota-border: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .rotaLoadingCard {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(34, 197, 94, 0.1), transparent 36%),
+    rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:root[data-theme='dark'] .rotaLoadingBar {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+:root[data-theme='dark'] .heroTrustLine {
+  color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .cycleDemoNumbers div {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* Mobile */
+
+@media (max-width: 760px) {
+  .topbar .brand .rotaLogoLockup--md .rotaLogoMark,
+  .topbar .brand .rotaLogoLockup--sm .rotaLogoMark {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+  }
+
+  .heroLogoLine .rotaLogoLockup--lg .rotaLogoMark {
+    width: 104px;
+    height: 104px;
+    border-radius: 26px;
+  }
+
+  .heroCycleDemo {
+    max-width: none;
+    padding: 22px;
+    border-radius: 28px;
+  }
+
+  .cycleDemoHeader {
+    display: grid;
+  }
+
+  .cycleDemoNumbers {
+    grid-template-columns: 1fr;
+  }
+
+  .cycleDemoLedger div {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .cycleDemoLedger em {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .rotaLoadingCard {
+    padding: 28px;
+    border-radius: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotaLogoMark::before,
+  .rotaOrbitDot,
+  .rotaLogoTagline,
+  .rotaLoadingBar span {
+    animation: none;
+  }
+}

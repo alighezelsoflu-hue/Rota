@@ -9,7 +9,7 @@ export default function HeroCycleDemo() {
           <h3>One member receives each cycle</h3>
         </div>
 
-        <Badge tone="success" dot>
+        <Badge tone="success" className="cycleInterestBadge">
           0% interest
         </Badge>
       </div>
@@ -44,26 +44,26 @@ export default function HeroCycleDemo() {
       <div className="cycleDemoLedger">
         <div>
           <span className="cycleDot success" />
-          <strong>Contributor 1</strong>
-          <em>Proof confirmed</em>
+          <strong>Member 1</strong>
+          <em>Confirmed</em>
         </div>
 
         <div>
           <span className="cycleDot success" />
-          <strong>Contributor 2</strong>
-          <em>Proof confirmed</em>
+          <strong>Member 2</strong>
+          <em>Confirmed</em>
         </div>
 
         <div>
           <span className="cycleDot warning" />
-          <strong>Contributor 3</strong>
-          <em>Waiting for review</em>
+          <strong>Member 4</strong>
+          <em>Reviewing</em>
         </div>
 
         <div>
           <span className="cycleDot danger" />
-          <strong>Contributor 4</strong>
-          <em>Pending proof</em>
+          <strong>Member 5</strong>
+          <em>Pending</em>
         </div>
       </div>
     </Card>

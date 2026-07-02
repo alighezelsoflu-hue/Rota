@@ -1,19 +1,28 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="132" fill="#0F172A"></rect>
-  <rect x="18" y="18" width="476" height="476" rx="116" fill="url(#paint0_radial)"></rect>
-  <rect x="18" y="18" width="476" height="476" rx="116" fill="url(#paint1_linear)"></rect>
-  <circle cx="414" cy="256" r="92" stroke="#22C55E" stroke-width="28"></circle>
-  <circle cx="414" cy="256" r="16" fill="#BBF7D0"></circle>
-  <text x="82" y="286" fill="#F8FAFC" font-family="Inter, Arial, sans-serif" font-size="88" font-weight="900" letter-spacing="10">ROTA</text>
+  <rect width="512" height="512" rx="128" fill="#0F172A"></rect>
+  <rect x="18" y="18" width="476" height="476" rx="112" fill="url(#bgGlow)"></rect>
+  <rect x="18" y="18" width="476" height="476" rx="112" fill="url(#bgBase)"></rect>
+  <ellipse cx="256" cy="258" rx="162" ry="74" stroke="#22C55E" stroke-opacity="0.34" stroke-width="8"></ellipse>
+  <circle cx="386" cy="213" r="20" fill="url(#dot)"></circle>
+  <circle cx="386" cy="213" r="34" fill="#22C55E" fill-opacity="0.12"></circle>
+  <text x="256" y="288" text-anchor="middle" fill="#F8FAFC" font-family="Inter, Arial, sans-serif" font-size="92" font-weight="900" letter-spacing="14">ROTA</text>
+
   <defs>
-    <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(392 218) rotate(133) scale(235)">
-      <stop stop-color="#22C55E" stop-opacity="0.42"></stop>
+    <radialGradient id="bgGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(382 210) rotate(133) scale(260)">
+      <stop stop-color="#22C55E" stop-opacity="0.38"></stop>
       <stop offset="1" stop-color="#22C55E" stop-opacity="0"></stop>
     </radialGradient>
-    <linearGradient id="paint1_linear" x1="54" y1="42" x2="456" y2="470" gradientUnits="userSpaceOnUse">
+
+    <linearGradient id="bgBase" x1="52" y1="42" x2="456" y2="470" gradientUnits="userSpaceOnUse">
       <stop stop-color="#111827"></stop>
-      <stop offset="0.58" stop-color="#0F172A"></stop>
+      <stop offset="0.54" stop-color="#0F172A"></stop>
       <stop offset="1" stop-color="#020617"></stop>
     </linearGradient>
+
+    <radialGradient id="dot" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(379 205) rotate(50) scale(33)">
+      <stop stop-color="#DCFCE7"></stop>
+      <stop offset="0.45" stop-color="#4ADE80"></stop>
+      <stop offset="1" stop-color="#16A34A"></stop>
+    </radialGradient>
   </defs>
 </svg>
